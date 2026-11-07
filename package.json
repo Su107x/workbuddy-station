@@ -1,0 +1,21 @@
+{
+  "name": "workbuddy-console",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WorkBuddy 多账号工作台 · 服务端（业务零第三方依赖，扫码登录依赖 playwright-core）",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "playwright-core": "^1.64.1"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^5.9.0",
+    "strip-comments": "^2.0.1"
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+data/
+*.enc
+.env
+.workbuddy/
+.scratch/
+dist/
+dist-exe/

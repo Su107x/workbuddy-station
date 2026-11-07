@@ -1,0 +1,3122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/svg+xml" href="/wb-logo.svg">
+<title>WorkBuddy 账号工作台</title>
+<style>
+:root{
+  --bg:#04060c;
+  --bg2:#070b14;
+  --panel:rgba(12,18,31,.72);
+  --panel2:rgba(17,25,41,.88);
+  --panel3:rgba(25,35,55,.9);
+  --line:rgba(120,160,220,.13);
+  --line2:rgba(120,175,255,.30);
+  --tx:#e9effb;
+  --tx2:#93a6c4;
+  --tx3:#5f7291;
+  --muted:var(--tx3);
+  --acc:#38bdf8;
+  --acc2:#818cf8;
+  --acc3:#22d3ee;
+  --accSoft:rgba(56,189,248,.13);
+  --ok:#34d399;
+  --okSoft:rgba(52,211,153,.13);
+  --warn:#fbbf24;
+  --warnSoft:rgba(251,191,36,.13);
+  --bad:#fb7185;
+  --badSoft:rgba(251,113,133,.13);
+  --r:14px; --r2:10px; --r3:8px;
+  --sh:0 12px 34px rgba(0,0,0,.5);
+  --shSoft:0 6px 18px rgba(0,0,0,.35);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:"Inter","HarmonyOS Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--tx);
+  font:14px/1.6 var(--sans);
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+  font-feature-settings:"tnum" 1;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--acc);text-decoration:none}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(90,130,190,.28);border-radius:6px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:rgba(110,160,230,.45);background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- 背景特效 ---------- */
+.bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-fx .grid{
+  position:absolute;inset:-2px;
+  background-image:
+    linear-gradient(rgba(110,165,255,.10) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(110,165,255,.10) 1px,transparent 1px);
+  background-size:44px 44px;
+  -webkit-mask-image:radial-gradient(ellipse 120% 90% at 50% 0%,#000 10%,transparent 72%);
+  mask-image:radial-gradient(ellipse 120% 90% at 50% 0%,#000 10%,transparent 72%);
+}
+.bg-fx .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5}
+.bg-fx .b1{width:520px;height:520px;left:-140px;top:-200px;background:rgba(34,211,238,.16)}
+.bg-fx .b2{width:620px;height:620px;right:-220px;top:-240px;background:rgba(129,140,248,.16)}
+.bg-fx .b3{width:520px;height:520px;left:38%;bottom:-320px;background:rgba(56,189,248,.10)}
+.bg-fx .scan{
+  position:absolute;left:0;right:0;height:180px;top:-180px;
+  background:linear-gradient(180deg,transparent,rgba(56,189,248,.05),transparent);
+  animation:scanDown 9s linear infinite;
+}
+@keyframes scanDown{0%{top:-180px}100%{top:100%}}
+
+/* ---------- 登录 ---------- */
+#gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:100;
+  background:radial-gradient(1100px 620px at 50% -12%,rgba(56,189,248,.12),transparent 62%),
+    radial-gradient(760px 520px at 50% 120%,rgba(129,140,248,.10),transparent 60%),
+    rgba(4,6,12,.72)}
+.gate-card{width:100%;max-width:390px;position:relative;
+  background:linear-gradient(180deg,rgba(16,23,38,.92),rgba(9,13,23,.94));
+  border:1px solid var(--line);border-radius:18px;padding:34px 30px 28px;box-shadow:var(--sh);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);overflow:hidden}
+.gate-card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(140deg,rgba(56,189,248,.55),rgba(129,140,248,.12) 42%,transparent 72%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude}
+.gate-logo{width:54px;height:54px;border-radius:15px;
+  display:grid;place-items:center;margin-bottom:18px;
+  box-shadow:0 10px 30px rgba(14,199,168,.34),0 0 0 1px rgba(255,255,255,.12),0 0 0 6px rgba(14,199,168,.08)}
+.gate-logo img{width:54px;height:54px;border-radius:15px;display:block}
+.gate-card h1{margin:0 0 6px;font-size:19px;letter-spacing:.4px;font-weight:650}
+.gate-card p{margin:0 0 22px;color:var(--tx2);font-size:13px}
+.gate-card .hint{margin-top:16px;font-size:12px;color:var(--tx3);line-height:1.6}
+.gate-tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--acc);
+  border:1px solid rgba(56,189,248,.3);border-radius:4px;padding:2px 7px;margin-bottom:14px;
+  background:rgba(56,189,248,.07)}
+/* HUD 四角装饰 */
+.hud-br{position:absolute;width:18px;height:18px;pointer-events:none;z-index:2;
+  border-color:rgba(56,189,248,.6);border-style:solid;border-width:0}
+.hud-tl{top:10px;left:10px;border-top-width:2px;border-left-width:2px}
+.hud-tr{top:10px;right:10px;border-top-width:2px;border-right-width:2px}
+.hud-bl{bottom:10px;left:10px;border-bottom-width:2px;border-left-width:2px}
+.hud-br2{bottom:10px;right:10px;border-bottom-width:2px;border-right-width:2px}
+
+/* ---------- 布局 ---------- */
+#app{display:none;height:100%;position:relative;z-index:1}
+#app.on{display:flex}
+.side{width:252px;flex:0 0 252px;position:relative;
+  background:linear-gradient(180deg,rgba(8,12,21,.92),rgba(5,8,14,.96));
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:16px 12px;gap:4px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.side::after{content:"";position:absolute;top:0;bottom:0;right:-1px;width:1px;
+  background:linear-gradient(180deg,rgba(56,189,248,.5),rgba(129,140,248,.18) 40%,transparent)}
+.brand{display:flex;align-items:center;gap:12px;padding:6px 8px 18px}
+.brand-mark{width:38px;height:38px;border-radius:11px;
+  display:grid;place-items:center;flex:0 0 38px;position:relative;
+  box-shadow:0 6px 18px rgba(14,199,168,.32),0 0 0 1px rgba(255,255,255,.1)}
+.brand-mark img{width:38px;height:38px;border-radius:11px;display:block}
+.brand-mark::after{content:"";position:absolute;inset:-4px;border-radius:15px;border:1px solid rgba(14,199,168,.28)}
+.brand-txt{min-width:0;flex:1}
+.brand-txt b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}
+.brand-txt span{display:block;font-size:10.5px;color:var(--tx3);font-family:var(--mono);letter-spacing:1.2px;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:2px;flex:1;min-height:0;overflow:auto}
+.nav-sec{font-family:var(--mono);font-size:12.5px;letter-spacing:3px;color:#8fb3d9;
+  text-transform:uppercase;padding:16px 12px 7px;font-weight:600;opacity:1;
+  text-shadow:0 0 14px rgba(56,189,248,.25)}
+.nav button{position:relative;display:flex;align-items:center;gap:11px;width:100%;padding:9px 11px;border-radius:var(--r2);
+  background:none;border:0;color:var(--tx2);cursor:pointer;text-align:left;transition:.16s}
+.nav button:hover{background:rgba(56,189,248,.07);color:var(--tx)}
+.nav button.on{background:linear-gradient(90deg,rgba(56,189,248,.18),rgba(129,140,248,.06) 70%,transparent);
+  color:#d9ecff;box-shadow:inset 0 0 0 1px rgba(56,189,248,.18)}
+.nav button.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:2px;border-radius:2px;
+  background:linear-gradient(180deg,var(--acc3),var(--acc2));box-shadow:0 0 10px rgba(56,189,248,.9)}
+.nav button.on svg{color:var(--acc)}
+.nav button svg{flex:0 0 16px;color:var(--tx3);transition:.16s}
+.nav .badge{margin-left:auto;font-size:10.5px;padding:1px 7px;border-radius:20px;background:rgba(255,255,255,.06);
+  color:var(--tx2);font-family:var(--mono);font-variant-numeric:tabular-nums}
+.nav button.on .badge{background:rgba(56,189,248,.2);color:#bfe4ff}
+.nav button .badge.err{background:var(--badSoft);color:#ff9aa8}
+.side-foot{padding:12px 10px 2px;border-top:1px solid var(--line);font-size:11.5px;color:var(--tx3);display:flex;flex-direction:column;gap:7px}
+.side-foot .row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--mono);letter-spacing:.3px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block;margin-right:6px;
+  box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:pulseDot 2.4s infinite}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 7px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;height:100%}
+.top{height:62px;flex:0 0 62px;position:relative;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  padding:0 22px;gap:16px;background:rgba(6,9,16,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(56,189,248,.55),rgba(129,140,248,.3),transparent)}
+.top h2{margin:0;font-size:18px;font-weight:650;letter-spacing:.4px;white-space:nowrap;flex:0 0 auto;line-height:1.15}
+.top .sub{font-size:13.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;
+  max-width:100%;line-height:1.2}
+/* 标题区按内容宽度占位，右侧元信息与按钮靠 auto margin 推到最右 */
+.top .grow{flex:0 0 auto;min-width:0}
+.top-meta{display:flex;align-items:center;gap:16px;font-family:var(--mono);font-size:13px;color:var(--tx2);letter-spacing:.8px;font-weight:500;
+  flex:0 0 auto;margin-left:auto}
+.top-meta b{color:#cfe8ff;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.top-meta .sep{width:1px;height:16px;background:var(--line)}
+.content{flex:1;overflow:auto;padding:22px;scroll-behavior:smooth}
+.wrap{max-width:1240px;margin:0 auto}
+
+/* ---------- 通用组件 ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:var(--r3);
+  border:1px solid var(--line2);background:rgba(255,255,255,.03);color:var(--tx);cursor:pointer;
+  transition:.16s;white-space:nowrap;font-size:13px}
+.btn:hover{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.45);box-shadow:0 0 16px rgba(56,189,248,.14)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.primary{background:linear-gradient(135deg,var(--acc3),var(--acc2));border-color:transparent;color:#04121c;font-weight:600;
+  box-shadow:0 6px 20px rgba(56,189,248,.28)}
+.btn.primary:hover{filter:brightness(1.08);box-shadow:0 8px 26px rgba(56,189,248,.4)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--tx2)}
+.btn.ghost:hover{background:rgba(255,255,255,.05);color:var(--tx);box-shadow:none}
+.btn.danger{color:#ffb0bb;border-color:rgba(251,113,133,.35);background:var(--badSoft)}
+.btn.danger:hover{background:rgba(251,113,133,.2)}
+.btn.sm{padding:4px 10px;font-size:12px;border-radius:7px}
+.btn svg{flex:0 0 auto}
+
+.card{position:relative;padding:17px 19px;
+  background:
+    linear-gradient(90deg,rgba(56,189,248,.55),rgba(56,189,248,.55)) left top/15px 1px no-repeat,
+    linear-gradient(180deg,rgba(56,189,248,.55),rgba(56,189,248,.55)) left top/1px 15px no-repeat,
+    linear-gradient(270deg,rgba(129,140,248,.42),rgba(129,140,248,.42)) right top/15px 1px no-repeat,
+    linear-gradient(180deg,rgba(129,140,248,.42),rgba(129,140,248,.42)) right top/1px 15px no-repeat,
+    linear-gradient(90deg,rgba(129,140,248,.42),rgba(129,140,248,.42)) left bottom/15px 1px no-repeat,
+    linear-gradient(0deg,rgba(129,140,248,.42),rgba(129,140,248,.42)) left bottom/1px 15px no-repeat,
+    linear-gradient(270deg,rgba(56,189,248,.55),rgba(56,189,248,.55)) right bottom/15px 1px no-repeat,
+    linear-gradient(0deg,rgba(56,189,248,.55),rgba(56,189,248,.55)) right bottom/1px 15px no-repeat,
+    linear-gradient(180deg,rgba(17,25,40,.86),rgba(10,15,25,.92));
+  border:1px solid var(--line);border-radius:var(--r);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:var(--shSoft);overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;opacity:.5;
+  background:linear-gradient(135deg,rgba(56,189,248,.45),rgba(129,140,248,.10) 38%,transparent 70%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude}
+.card+.card{margin-top:14px}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:15px}
+.card-h h3{margin:0;font-size:13.5px;font-weight:650;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+.card-h h3::before{content:"";width:3px;height:13px;border-radius:2px;background:linear-gradient(180deg,var(--acc3),var(--acc2));
+  box-shadow:0 0 8px rgba(56,189,248,.7)}
+.card-h .grow{flex:1}
+.muted{color:var(--tx2)}
+.tiny{font-size:12px;color:var(--tx3);line-height:1.65}
+.mono{font-family:var(--mono);font-size:12.5px;letter-spacing:.2px}
+
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+.stat{position:relative;overflow:hidden;
+  background:
+    linear-gradient(90deg,rgba(56,189,248,.5),rgba(56,189,248,.5)) left top/13px 1px no-repeat,
+    linear-gradient(180deg,rgba(56,189,248,.5),rgba(56,189,248,.5)) left top/1px 13px no-repeat,
+    linear-gradient(270deg,rgba(129,140,248,.4),rgba(129,140,248,.4)) right bottom/13px 1px no-repeat,
+    linear-gradient(0deg,rgba(129,140,248,.4),rgba(129,140,248,.4)) right bottom/1px 13px no-repeat,
+    linear-gradient(180deg,rgba(18,26,42,.88),rgba(10,15,25,.92));
+  border:1px solid var(--line);border-radius:var(--r);padding:15px 17px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:var(--shSoft);transition:.2s}
+.stat:hover{transform:translateY(-2px);border-color:rgba(56,189,248,.28);box-shadow:0 14px 34px rgba(0,0,0,.45)}
+.stat::before{content:"";position:absolute;left:0;top:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--acc3),var(--acc2),transparent)}
+.stat::after{content:"";position:absolute;right:-26px;bottom:-26px;width:74px;height:74px;border-radius:50%;
+  background:radial-gradient(circle,rgba(56,189,248,.10),transparent 70%);pointer-events:none}
+.stat .k{font-size:11.5px;color:var(--tx3);display:flex;align-items:center;gap:7px;letter-spacing:.6px;text-transform:uppercase}
+.stat .k svg{opacity:.7}
+.stat .v{font-size:27px;font-weight:650;letter-spacing:-.8px;margin-top:8px;
+  color:#dceeff;text-shadow:0 0 26px rgba(56,189,248,.4);font-variant-numeric:tabular-nums;line-height:1.15}
+.stat .d{font-size:11.5px;color:var(--tx3);margin-top:4px}
+.stat.acc .v{color:#8fd8ff;text-shadow:0 0 22px rgba(56,189,248,.45)}
+.stat.ok .v{color:#5eead4;text-shadow:0 0 22px rgba(52,211,153,.4)}
+.stat.warn .v{color:#fcd34d;text-shadow:0 0 22px rgba(251,191,36,.35)}
+.stat.bad .v{color:#fda4af;text-shadow:0 0 22px rgba(251,113,133,.4)}
+
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:11.5px;
+  background:rgba(255,255,255,.05);color:var(--tx2);white-space:nowrap;border:1px solid rgba(255,255,255,.05)}
+.pill.info{background:var(--accSoft);color:#7dd3fc;border-color:rgba(56,189,248,.28)}
+.pill.error{background:var(--badSoft);color:#fda4af;border-color:rgba(251,113,133,.28)}
+.pill.other{background:rgba(255,255,255,.05);color:var(--tx2);border-color:var(--line)}
+.pill.ok{background:var(--okSoft);color:#6ee7b7;border-color:rgba(52,211,153,.28)}
+.pill.warn{background:var(--warnSoft);color:#fcd34d;border-color:rgba(251,191,36,.28)}
+.pill.bad{background:var(--badSoft);color:#fda4af;border-color:rgba(251,113,133,.28)}
+.pill.acc{background:var(--accSoft);color:#7dd3fc;border-color:rgba(56,189,248,.3)}
+
+.bar{height:6px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+.bar>i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--acc3),var(--acc2));
+  box-shadow:0 0 12px rgba(56,189,248,.55);transition:width .5s cubic-bezier(.4,0,.2,1)}
+.bar.low>i{background:linear-gradient(90deg,var(--warn),var(--bad));box-shadow:0 0 12px rgba(251,113,133,.45)}
+
+.empty{text-align:center;padding:38px 16px;color:var(--tx3)}
+.empty b{display:block;color:var(--tx2);font-size:13.5px;margin-bottom:6px;font-weight:500}
+
+/* 账号卡 */
+.accs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.acard{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(18,26,42,.85),rgba(10,15,25,.9));
+  border:1px solid var(--line);border-radius:var(--r);padding:16px 17px;
+  display:flex;flex-direction:column;gap:12px;transition:.2s;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:var(--shSoft)}
+.acard:hover{border-color:rgba(56,189,248,.3);transform:translateY(-2px);box-shadow:0 16px 38px rgba(0,0,0,.45)}
+.acard.off{opacity:.55}
+.acard.err{border-color:rgba(251,113,133,.42)}
+.acard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,var(--acc3),var(--acc2));opacity:.8}
+.acard.err::before{background:linear-gradient(180deg,var(--bad),rgba(251,113,133,.2))}
+.acard.off::before{opacity:.25}
+.acard-top{display:flex;align-items:center;gap:11px;min-width:0}
+.avatar{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-weight:600;font-size:14px;
+  font-family:var(--mono);background:linear-gradient(140deg,rgba(56,189,248,.22),rgba(129,140,248,.14));
+  color:#a9dcff;flex:0 0 38px;box-shadow:inset 0 0 0 1px rgba(56,189,248,.25)}
+.acard-name{min-width:0;flex:1}
+.acard-name b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acard-name span{display:block;font-size:11px;color:var(--tx3);font-family:var(--mono)}
+.acard-credit{display:block}
+.acard-credit b{font-size:23px;font-weight:650;letter-spacing:-.8px;color:#d5eaff;white-space:nowrap;display:block;
+  text-shadow:0 0 20px rgba(56,189,248,.35);font-variant-numeric:tabular-nums}
+.acard-credit small{font-size:11px;color:var(--tx3);text-align:left;line-height:1.65;display:block;margin-top:3px;
+  white-space:normal;overflow:visible;word-break:break-word}
+.acard-meta{display:flex;flex-wrap:wrap;gap:6px}
+.acard-foot{display:flex;align-items:center;gap:6px;padding-top:12px;border-top:1px solid var(--line)}
+.acard-foot .grow{flex:1}
+.switch{position:relative;width:36px;height:20px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid var(--line);
+  cursor:pointer;transition:.2s;flex:0 0 36px}
+.switch:after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#7f8ea5;transition:.2s}
+.switch.on{background:rgba(56,189,248,.28);border-color:rgba(56,189,248,.45)}
+.switch.on:after{left:18px;background:var(--acc);box-shadow:0 0 10px rgba(56,189,248,.9)}
+
+/* 积分：实时标记 / 到期倒计时 / 流水 */
+.cnum{display:inline-flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.live{font-family:var(--mono);font-size:10.5px;letter-spacing:.3px;color:var(--tx3);border:1px solid var(--line);
+  border-radius:20px;padding:0 7px;line-height:1.6;white-space:nowrap;background:rgba(255,255,255,.03)}
+.live.fresh{color:#6ee7b7;border-color:rgba(52,211,153,.35);background:var(--okSoft)}
+.live.stale{color:#fcd34d;border-color:rgba(251,191,36,.32);background:var(--warnSoft)}
+.exp{font-family:var(--mono);font-size:11.5px;white-space:nowrap}
+.exp.bad{color:#fda4af}
+.exp.warn{color:#fcd34d}
+.exp.calm{color:var(--tx3)}
+.ledger{display:flex;flex-direction:column}
+.lg-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.lg-row:last-child{border-bottom:0}
+.lg-row:hover{background:rgba(56,189,248,.035)}
+.lg-row .t{font-family:var(--mono);font-size:11.5px;color:var(--tx3);flex:0 0 auto;white-space:nowrap}
+.lg-row .who{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg-row .d{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:650;flex:0 0 auto}
+.delta.up{color:#6ee7b7}
+.delta.down{color:#fda4af}
+
+/* 表单 */
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.field>label{font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:6px;letter-spacing:.4px}
+.field .help{font-size:11.5px;color:var(--tx3);line-height:1.6}
+input[type=text],input[type=password],input[type=number],input[type=time],select,textarea{
+  width:100%;padding:9px 12px;border-radius:var(--r3);border:1px solid var(--line2);
+  background:rgba(4,7,13,.6);color:var(--tx);outline:none;transition:.16s;font-size:13px}
+input:focus,select:focus,textarea:focus{border-color:rgba(56,189,248,.6);box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+textarea{resize:vertical;min-height:74px;font-family:var(--mono);font-size:12.5px}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--tx3) 50%),linear-gradient(135deg,var(--tx3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px}
+.inline{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.inline>.field{flex:1;min-width:150px;margin-bottom:0}
+.rowline{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.rowline:last-child{border-bottom:0}
+.rowline .t b{display:block;font-size:13px;font-weight:500}
+.rowline .t span{display:block;font-size:11.5px;color:var(--tx3)}
+
+/* 列表 */
+.list{display:flex;flex-direction:column}
+.item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);transition:.14s}
+.item:hover{background:rgba(56,189,248,.035)}
+.item:last-child{border-bottom:0}
+.item .ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:0 0 30px;
+  background:rgba(255,255,255,.05);color:var(--tx2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.item .ico.bad{background:var(--badSoft);color:var(--bad);box-shadow:inset 0 0 0 1px rgba(251,113,133,.25)}
+.item .ico.warn{background:var(--warnSoft);color:var(--warn);box-shadow:inset 0 0 0 1px rgba(251,191,36,.25)}
+.item .ico.ok{background:var(--okSoft);color:var(--ok);box-shadow:inset 0 0 0 1px rgba(52,211,153,.25)}
+.item .txt{flex:1;min-width:0}
+.item .txt>b{display:block;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .txt>span{display:block;font-size:11.5px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .acts{display:flex;gap:6px;flex:0 0 auto;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.item .txt b .pill{vertical-align:1px;margin-left:2px}
+
+/* 签到热力 */
+.heat{display:grid;grid-template-columns:repeat(18,1fr);gap:4px}
+.heat i{aspect-ratio:1;border-radius:3px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+.heat i.on{background:linear-gradient(140deg,rgba(52,211,153,.85),rgba(56,189,248,.7));box-shadow:0 0 8px rgba(52,211,153,.4)}
+.heat i.mid{background:rgba(52,211,153,.32)}
+.legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx3);margin-top:10px}
+
+/* 抽屉 */
+.mask{position:fixed;inset:0;background:rgba(3,5,10,.72);backdrop-filter:blur(4px);z-index:90;display:none}
+.mask.on{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(470px,100%);z-index:91;transform:translateX(102%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;
+  background:linear-gradient(180deg,rgba(11,16,27,.97),rgba(6,9,16,.99));
+  border-left:1px solid rgba(56,189,248,.24);box-shadow:-24px 0 60px rgba(0,0,0,.55)}
+.drawer.on{transform:none}
+.drawer-h{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.drawer-h h3{margin:0;font-size:14.5px;font-weight:650;letter-spacing:.4px;flex:1}
+.drawer-b{padding:20px;overflow:auto;flex:1}
+.drawer-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+
+/* 提示 */
+#toasts{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:rgba(16,23,38,.95);border:1px solid var(--line2);border-radius:var(--r2);padding:9px 16px;
+  font-size:13px;box-shadow:var(--sh);max-width:min(520px,90vw);animation:tin .22s ease-out;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.toast.ok{border-color:rgba(52,211,153,.45);box-shadow:0 8px 26px rgba(52,211,153,.12)}
+.toast.bad{border-color:rgba(251,113,133,.5);box-shadow:0 8px 26px rgba(251,113,133,.12)}
+.toast.warn{border-color:rgba(251,191,36,.45)}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* 代码块 */
+.code{background:rgba(2,4,8,.78);border:1px solid var(--line);border-radius:var(--r2);padding:13px 15px;
+  font-family:var(--mono);font-size:12px;line-height:1.75;overflow:auto;color:#a9c6ee;white-space:pre;position:relative}
+.code .copy{position:absolute;top:8px;right:8px}
+
+/* 表格 */
+.tbl{width:100%;font-size:12px;border-collapse:collapse;font-family:var(--mono)}
+.tbl thead th{text-align:left;padding:7px 9px;font-weight:500;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;
+  font-size:10.5px;border-bottom:1px solid var(--line2);white-space:nowrap}
+.tbl tbody td{padding:6px 9px;border-bottom:1px solid rgba(120,160,220,.07);white-space:nowrap}
+.tbl tbody tr:hover{background:rgba(56,189,248,.05)}
+.tbl .num{font-variant-numeric:tabular-nums}
+
+/* 系统状态条 */
+.sysbar{display:flex;flex-wrap:wrap;gap:0;padding:0;align-items:stretch}
+.sysbar::before{display:none}
+.syscell{flex:1 1 190px;display:flex;align-items:center;gap:11px;padding:14px 18px;
+  border-right:1px solid var(--line);position:relative}
+.syscell:last-child{border-right:0}
+.syscell .dot{width:8px;height:8px;flex:0 0 8px;margin:0}
+.syscell .dot.off{background:var(--tx3);animation:none;box-shadow:none}
+.syscell .t{min-width:0}
+.syscell .t b{display:block;font-size:14.5px;font-weight:650;color:#d5eaff;letter-spacing:-.2px;font-variant-numeric:tabular-nums}
+.syscell .t span{display:block;font-size:11px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:760px){
+  .syscell{border-right:0;border-bottom:1px solid var(--line);flex-basis:50%}
+  .syscell:nth-child(2n){border-right:0}
+}
+
+/* ---------- 运行日志控制台 ---------- */
+.log-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.log-filters{display:flex;gap:4px;padding:3px;border-radius:9px;background:rgba(255,255,255,.04);
+  border:1px solid var(--line)}
+.log-filters button{padding:4px 11px;border-radius:7px;border:0;background:transparent;color:var(--tx2);
+  cursor:pointer;font-size:12px;transition:.15s;display:flex;align-items:center;gap:6px}
+.log-filters button:hover{color:var(--tx)}
+.log-filters button.on{background:linear-gradient(135deg,rgba(56,189,248,.26),rgba(129,140,248,.18));color:#dff0ff;
+  box-shadow:inset 0 0 0 1px rgba(56,189,248,.32)}
+.log-filters .cnt{font-family:var(--mono);font-size:10.5px;color:var(--tx3)}
+.log-search{position:relative;flex:1;min-width:190px;max-width:340px}
+.log-search input{width:100%;padding-left:32px;font-size:12.5px}
+.log-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tx3);pointer-events:none}
+.log-console{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;position:relative;
+  background:linear-gradient(180deg,rgba(8,12,20,.86),rgba(5,8,14,.9));
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.log-console .hud-br{position:absolute;width:16px;height:16px;pointer-events:none;z-index:3;
+  border-color:rgba(56,189,248,.6);border-style:solid;border-width:0}
+.log-console .hud-tl{top:0;left:0;border-top-width:2px;border-left-width:2px;border-top-left-radius:var(--r)}
+.log-console .hud-br2{bottom:0;right:0;border-bottom-width:2px;border-right-width:2px;border-bottom-right-radius:var(--r)}
+.log-head{display:grid;grid-template-columns:150px 74px 1fr auto;gap:12px;align-items:center;padding:9px 14px;
+  border-bottom:1px solid var(--line);background:rgba(255,255,255,.025);font-family:var(--mono);font-size:10.5px;
+  color:var(--tx3);letter-spacing:1.4px;text-transform:uppercase}
+.log-head .grow{flex:1}
+.log-rows{max-height:min(62vh,620px);overflow:auto}
+.lrow{display:grid;grid-template-columns:150px 74px 1fr;gap:12px;align-items:baseline;padding:8px 14px;
+  border-bottom:1px solid rgba(120,160,220,.06);transition:.12s}
+.lrow:hover{background:rgba(56,189,248,.05)}
+.lrow .t{font-family:var(--mono);font-size:11.5px;color:var(--tx3);white-space:nowrap}
+.lrow .lv{font-family:var(--mono);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;text-align:center;
+  padding:1px 0;border-radius:5px;border:1px solid transparent}
+.lrow .m{font-size:13px;color:#cfe0f5;word-break:break-word;line-height:1.6}
+.lrow .m .x{color:var(--tx3);font-family:var(--mono);font-size:11.5px;margin-left:8px}
+.lv-info{background:var(--accSoft);color:#7dd3fc;border-color:rgba(56,189,248,.28)}
+.lv-warn{background:var(--warnSoft);color:#fcd34d;border-color:rgba(251,191,36,.28)}
+.lv-error{background:var(--badSoft);color:#fda4af;border-color:rgba(251,113,133,.3)}
+.lv-other{background:rgba(255,255,255,.05);color:var(--tx2);border-color:var(--line)}
+.log-row-err{box-shadow:inset 2px 0 0 rgba(251,113,133,.55)}
+.log-row-warn{box-shadow:inset 2px 0 0 rgba(251,191,36,.45)}
+.log-row-info{box-shadow:inset 2px 0 0 rgba(56,189,248,.28)}
+.log-foot{padding:9px 14px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;
+  font-family:var(--mono);font-size:10.5px;color:var(--tx3);letter-spacing:.8px;flex-wrap:wrap}
+.log-foot .grow{flex:1}
+.log-empty{padding:44px 16px;text-align:center;color:var(--tx3);font-family:var(--mono);font-size:12.5px;letter-spacing:.5px}
+
+/* 移动端 */
+.tabbar{display:none}
+@media (max-width:900px){
+  .side{display:none}
+  #app{flex-direction:column}
+  .top{height:56px;flex-basis:56px;padding:0 14px}
+  .content{padding:14px 14px 86px}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3,.g2{grid-template-columns:1fr}
+  .accs{grid-template-columns:1fr}
+  .top-meta{display:none}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;height:64px;background:rgba(6,9,16,.94);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:60;
+    padding-bottom:env(safe-area-inset-bottom)}
+  .tabbar button{flex:1;min-width:0;background:none;border:0;color:var(--tx3);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;font-size:10.5px;cursor:pointer;padding:6px 0}
+  .tabbar button.on{color:var(--acc)}
+  .tabbar button.on svg{filter:drop-shadow(0 0 6px rgba(56,189,248,.7))}
+  .tabbar button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .drawer{width:100%}
+  .heat{grid-template-columns:repeat(12,1fr)}
+  .lrow{grid-template-columns:1fr;gap:3px;padding:9px 11px}
+  .lrow .t{font-size:10.5px;opacity:.8}
+  .lrow .lv{justify-self:start;padding:1px 8px}
+  .lrow .m{font-size:12.5px}
+  .log-head{display:none}
+  .log-console{border-radius:var(--r2)}
+  .log-search{max-width:none}
+}
+@media (max-width:560px){ .g4{grid-template-columns:1fr 1fr} }
+@media (max-width:640px){
+  .top .sub{display:none}
+  #btnLogout{display:none}
+  .top{gap:8px}
+  #topActions .btn{padding:6px 10px;font-size:12px}
+}
+
+</style>
+</head>
+<body>
+
+<!-- 背景特效层 -->
+<div class="bg-fx" aria-hidden="true">
+  <div class="grid"></div>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="scan"></div>
+</div>
+
+<!-- 登录 -->
+<div id="gate">
+  <form class="gate-card" id="loginForm" autocomplete="on">
+    <span class="hud-br hud-tl"></span><span class="hud-br hud-tr"></span>
+    <span class="hud-br hud-bl"></span><span class="hud-br hud-br2"></span>
+    <div class="gate-logo">
+      <img src="/wb-logo.svg" alt="WorkBuddy" width="34" height="34">
+    </div>
+    <span class="gate-tag">WORKBUDDY CONSOLE</span>
+    <h1>WorkBuddy 账号工作台</h1>
+    <p id="gateDesc">请输入管理员口令进入控制台</p>
+    <div class="field">
+      <label for="pw">管理员口令</label>
+      <input id="pw" type="password" placeholder="至少 8 位" autocomplete="current-password" required>
+    </div>
+    <button class="btn primary" type="submit" id="loginBtn" style="width:100%;justify-content:center;padding:10px">
+      进入控制台
+    </button>
+    <div class="hint" id="gateHint">首次使用：在这里**设置一个你自己的密码**（至少 8 位），输入后即完成初始化。<br>这个密码只有你知道，忘记后在服务器删除 <span class="mono">data/</span> 会清空数据，请务必牢记。</div>
+  </form>
+</div>
+
+<!-- 主界面 -->
+<div id="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="brand-mark">
+        <img src="/wb-logo.svg" alt="WorkBuddy" width="26" height="26">
+      </div>
+      <div class="brand-txt"><b id="brandName">账号工作台</b><span>WorkBuddy Console</span></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div class="row"><span><span class="dot"></span> 服务运行中</span><span id="footTime" class="mono"></span></div>
+      <div class="row"><span>定时任务</span><span id="footSched">-</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="grow" style="display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-width:0">
+        <h2 id="pageTitle">概览</h2>
+        <span class="sub" id="pageSub"></span>
+      </div>
+      <div class="top-meta" id="topMeta"></div>
+      <div id="topActions" style="display:flex;gap:8px;align-items:center"></div>
+      <button class="btn ghost sm" id="btnLogout" title="退出登录">退出</button>
+    </header>
+    <!-- 授权状态条：未授权/过期时常驻显示 -->
+    <div id="licBar" style="display:none;align-items:center;gap:10px;padding:9px 16px;background:rgba(220,60,60,.12);border-bottom:1px solid rgba(220,60,60,.35);color:#c33;font-size:13px">
+      <span style="font-weight:600">⚠ 功能已停用</span>
+      <span class="lic-txt" style="flex:1">未授权</span>
+      <button class="btn sm" onclick="location.hash='#/settings'">去填授权码</button>
+    </div>
+    <main class="content"><div class="wrap" id="view"></div></main>
+  </div>
+
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+
+<div class="mask" id="mask"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-h"><h3 id="drawerTitle">编辑</h3><button class="btn ghost sm" id="drawerClose">关闭</button></div>
+  <div class="drawer-b" id="drawerBody"></div>
+  <div class="drawer-f" id="drawerFoot"></div>
+</aside>
+
+<div id="toasts"></div>
+
+<script>
+'use strict';
+/* ============ 基础工具 ============ */
+var S = { authed:false, csrf:'', state:null, view:'home', busy:false };
+
+function $(sel){ return document.querySelector(sel); }
+function el(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function num(n){
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  var v = Number(n);
+  if (Math.abs(v) >= 100000000) return (v/100000000).toFixed(2) + '亿';
+  if (Math.abs(v) >= 10000) return (v/10000).toFixed(1) + '万';
+  return v.toLocaleString('zh-CN');
+}
+/* 积分：保留最多两位小数，去掉多余的 0（上游 TotalCredits 带一长串浮点尾数） */
+function fmtCredit(n){
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  var v = Number(n);
+  if (!isFinite(v)) return '—';
+  var r = Math.round(v * 100) / 100;
+  return r.toLocaleString('zh-CN', { maximumFractionDigits: 2 });
+}
+function dt(ts){
+  if (!ts) return '—';
+  var d = new Date(ts);
+  var p = function(x){ return String(x).padStart(2,'0'); };
+  return (d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function fromNow(ts){
+  if (!ts) return '';
+  var s = Math.floor((Date.now()-ts)/1000);
+  if (s < 60) return s + ' 秒前';
+  if (s < 3600) return Math.floor(s/60) + ' 分钟前';
+  if (s < 86400) return Math.floor(s/3600) + ' 小时前';
+  return Math.floor(s/86400) + ' 天前';
+}
+function toast(msg, kind){
+  var box = el('toasts');
+  var d = document.createElement('div');
+  d.className = 'toast ' + (kind||'');
+  d.textContent = msg;
+  box.appendChild(d);
+  setTimeout(function(){ d.style.opacity='0'; d.style.transform='translateY(6px)'; d.style.transition='.25s'; }, 2600);
+  setTimeout(function(){ d.remove(); }, 2950);
+}
+var ICONS = {
+  home:'<path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/>',
+  check:'<path d="M20 6L9 17l-5-5"/>',
+  plug:'<path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8H6v4a6 6 0 0 0 12 0z"/>',
+  cat:'<path d="M12 5c.7 0 1.3.1 2 .3L17 3l.5 3.2A7 7 0 0 1 19 12v3a4 4 0 0 1-4 4h-6a4 4 0 0 1-4-4v-3a7 7 0 0 1 1.5-5.8L7 3l3 2.3c.6-.2 1.3-.3 2-.3z"/><path d="M9 12h.01M15 12h.01"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6 1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.53.9 1.01 1.03H21a2 2 0 1 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15z"/>',
+  refresh:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
+  alert:'<path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  edit:'<path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  key:'<circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.5 12.5L21 2M17 6l3 3"/>',
+  down:'<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/>',
+  play:'<path d="M5 3l14 9-14 9z"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  wave:'<path d="M2 12h4l3-9 4 18 3-9h6"/>',
+  qr:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M20 14v3M14 20h3M20 20h.01M17 17v.01"/>',
+  gift:'<path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 21V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>'
+};
+function icon(name, size){
+  var p = ICONS[name] || ICONS.gear;
+  var s = size || 16;
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
+}
+
+/* ============ API ============ */
+async function api(path, opts){
+  opts = opts || {};
+  var init = { method: opts.method || (opts.body ? 'POST':'GET'), headers:{}, credentials:'same-origin' };
+  if (opts.body !== undefined){
+    init.headers['content-type'] = 'application/json';
+    init.body = JSON.stringify(opts.body);
+  }
+  if (init.method !== 'GET' && S.csrf) init.headers['x-wb-csrf'] = S.csrf;
+  // 可选超时：默认不限制（长任务如代理流式），
+  // 但登录这类必须给上限，否则服务端挂住时界面永远转圈、用户无从下手。
+  var ms = opts.timeout || 0;
+  var ctrl = null, timer = null;
+  if (ms > 0 && typeof AbortController !== 'undefined'){
+    ctrl = new AbortController();
+    init.signal = ctrl.signal;
+    timer = setTimeout(function(){ ctrl.abort(); }, ms);
+  }
+  var res;
+  try{
+    res = await fetch(path, init);
+  }catch(err){
+    if (timer) clearTimeout(timer);
+    if (err && err.name === 'AbortError'){
+      var e = new Error('请求超时（' + Math.round(ms/1000) + ' 秒）');
+      e.timeout = true;
+      throw e;
+    }
+    throw err;
+  }
+  if (timer) clearTimeout(timer);
+  var text = await res.text();
+  var data = null;
+  try { data = text ? JSON.parse(text) : null; } catch(e){ data = { raw:text }; }
+  if (!res.ok){
+    var msg = (data && (data.error || (data.error && data.error.message))) || ('HTTP ' + res.status);
+    if (res.status === 401 && path !== '/api/login'){ showGate(); }
+    /* 授权闸门：服务端返回 403 + LICENCE_REQUIRED 时，弹一次明确提示并引导去设置。
+       注意这只是"提示"——真正的拦截在服务端，改前端 JS 也绕不过去。 */
+    if (res.status === 403 && data && data.code === 'LICENCE_REQUIRED'){
+      showLicenceBlock(data.error || '未授权', data.reason || '');
+    }
+    var err = new Error(typeof msg === 'string' ? msg : '请求失败');
+    err.status = res.status; err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+/* ============ 登录 ============ */
+function showGate(){
+  S.authed = false;
+  el('app').classList.remove('on');
+  el('gate').style.display = 'flex';
+}
+
+/* ---- 授权拦截提示（服务端 403 时触发）---- */
+var _licBlockAt = 0;
+function showLicenceBlock(msg, reason){
+  // 10 秒内只弹一次，避免连续请求刷屏
+  if (Date.now() - _licBlockAt < 10000) return;
+  _licBlockAt = Date.now();
+  var tip = document.getElementById('licBar');
+  if (tip){
+    tip.style.display = 'flex';
+    tip.querySelector('.lic-txt').textContent = msg || '未授权';
+  }
+  toast(msg || '未授权：请填写授权码', 'bad');
+  // 引导到设置页（授权码在设置里填）
+  setTimeout(function(){
+    try { if (location.hash !== '#/settings') location.hash = '#/settings'; } catch(e){}
+  }, 600);
+}
+function hideGate(){
+  el('gate').style.display = 'none';
+  el('app').classList.add('on');
+}
+el('loginForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  var btn = el('loginBtn');
+  btn.disabled = true; btn.textContent = '正在验证…';
+  try{
+    var r = await api('/api/login', { body:{ password: el('pw').value } });
+    S.csrf = r.csrf; S.authed = true;
+    hideGate();
+    await loadState();
+    toast('已进入控制台', 'ok');
+  }catch(err){
+    toast(err.message, 'bad');
+  }finally{
+    btn.disabled = false; btn.textContent = '进入控制台';
+  }
+});
+
+/* ============ 状态加载 ============ */
+/* 网关 API Key 明文改为单独接口获取（/api/state 不再下发，防止未授权者读到）。
+   只在已登录时拉一次，缓存到 S.proxyKey，前端各处照旧用 S.state.settings.proxy.accessKey 的读法
+   已统一改为读这里。 */
+async function loadProxyKey(){
+  try{
+    var r = await api('/api/proxy/key');
+    S.proxyKey = (r && r.accessKey) || '';
+    if (S.state && S.state.settings && S.state.settings.proxy){
+      S.state.settings.proxy.accessKey = S.proxyKey;
+    }
+  }catch(e){
+    // 未授权时这个接口会 403（不让拿 Key），属于预期，静默处理即可
+    S.proxyKey = '';
+  }
+}
+
+/* 查授权状态并更新顶部状态条（免授权接口，未授权也能调） */
+async function pollLicence(){
+  try{
+    var L = await api('/api/licence');
+    var bar = document.getElementById('licBar');
+    if (!bar) return;
+    if (L && L.ok){
+      bar.style.display = 'none';
+    } else {
+      bar.style.display = 'flex';
+      var t = bar.querySelector('.lic-txt');
+      if (t) t.textContent = (L && L.message) || '未授权：请填写授权码';
+    }
+    S.licence = L;
+  }catch(e){ /* 忽略：不影响主流程 */ }
+}
+
+async function loadState(){
+  var s = await api('/api/state');
+  S.state = s;
+  pollLicence();
+  loadProxyKey();
+  if (s.settings && s.settings.siteTitle){
+    document.title = s.settings.siteTitle;
+    el('brandName').textContent = s.settings.siteTitle;
+  }
+  renderShell();
+  renderView();
+  if (S.view === 'logs') loadLogs();
+}
+async function refresh(){ try{ await loadState(); }catch(e){ toast(e.message,'bad'); } }
+
+/* ============ 导航 ============ */
+var NAV = [
+  { sec:'监控' },
+  { id:'home', name:'概览', icon:'home' },
+  { id:'logs', name:'运行日志', icon:'wave', badge:function(s){ return s.logsTotal || s.logs.length || ''; } },
+  { sec:'资源' },
+  { id:'accounts', name:'账号', icon:'users', badge:function(s){ return s.summary.total || ''; } },
+  { id:'credits', name:'积分', icon:'wave', badge:function(s){ return num(s.summary.credits) || ''; } },
+  { id:'checkin', name:'签到', icon:'check', badge:function(s){ return s.summary.pending > 0 ? s.summary.pending : ''; } },
+  { id:'meow', name:'小喵', icon:'cat' },
+  { sec:'网关' },
+  { id:'proxy', name:'代理', icon:'plug' },
+  { sec:'系统' },
+  { id:'settings', name:'设置', icon:'gear' }
+];
+function renderShell(){
+  var s = S.state;
+  s.logErrors = (s.logs || []).filter(function(l){ return l.level === 'error'; }).length;
+  var html = '';
+  NAV.forEach(function(n){
+    if (n.sec){ html += '<div class="nav-sec">'+esc(n.sec)+'</div>'; return; }
+    var b = n.badge ? n.badge(s) : '';
+    html += '<button data-nav="'+n.id+'" class="'+(S.view===n.id?'on':'')+'">'+icon(n.icon)+
+      '<span>'+n.name+'</span>'+(b?'<span class="badge'+(n.id==='logs'&&s.logErrors?' err':'')+'">'+esc(b)+'</span>':'')+'</button>';
+  });
+  el('nav').innerHTML = html;
+  el('tabbar').innerHTML = NAV.filter(function(n){ return !n.sec; }).map(function(n){
+    return '<button data-nav="'+n.id+'" class="'+(S.view===n.id?'on':'')+'">'+icon(n.icon,18)+'<span>'+n.name+'</span></button>';
+  }).join('');
+  el('footSched').textContent = s.scheduler && s.scheduler.lastCheckinDate ? ('今日已跑') : '待触发';
+  el('footTime').textContent = new Date(s.serverTime).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+  el('pageTitle').textContent = (NAV.find(function(n){return n.id===S.view;})||{}).name || '概览';
+  el('pageSub').textContent = s.summary.total + ' 个账号 · ' + s.summary.enabled + ' 启用 · ' + s.today;
+  var tm = el('topMeta');
+  if (tm){
+    var tick = s.schedulerLastTick ? new Date(s.schedulerLastTick).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}) : '--:--';
+    var build = s.build || {};
+    var vtag = build.version ? '<span class="sep"></span>' +
+      '<span title="构建版本 / 路由自检：' + esc(((build.routeHealth && build.routeHealth.ok) ? 'OK' : '路由缺失')) + '">VER <b>' + esc(build.version) + '</b></span>' : '';
+    tm.innerHTML = '<span>心跳 <b>' + tick + '</b></span>' +
+      '<span class="sep"></span>' +
+      '<span>账号 <b>' + s.summary.enabled + '/' + s.summary.total + '</b></span>' +
+      '<span class="sep"></span>' +
+      '<span>积分 <b>' + fmtCredit(s.summary.credits) + '</b></span>' +
+      '<span class="sep"></span>' +
+      '<span>模型 <b>' + num(s.models || 0) + '</b></span>' + vtag.replace('VER','版本');
+  }
+}
+document.addEventListener('click', function(e){
+  var t = e.target.closest('[data-nav]');
+  if (t){ setView(t.getAttribute('data-nav')); }
+});
+function setView(v){
+  S.view = v;
+  try { history.replaceState(null, '', '#' + v); } catch(e){}
+  if (v !== 'logs') logAutoRefresh(false);
+  renderShell();
+  renderView();
+  if (v === 'logs') loadLogs();
+  var c = document.querySelector('.content'); if (c) c.scrollTop = 0;
+}
+function viewFromHash(){
+  var h = (location.hash || '').replace('#','');
+  return NAV.some(function(n){ return n.id === h; }) ? h : 'home';
+}
+window.addEventListener('hashchange', function(){
+  if (!S.authed) return;
+  var v = viewFromHash();
+  if (v !== S.view) setView(v);
+});
+
+/* ============ 视图渲染 ============ */
+function renderView(){
+  var fn = VIEWS[S.view] || VIEWS.home;
+  el('topActions').innerHTML = '';
+  el('view').innerHTML = fn.render(S.state);
+  // 视图重渲染会重建 DOM，先把已有缓存同步画回去，避免闪空白 / 卡在「加载中」
+  if (fn.after) fn.after(S.state);
+}
+
+var VIEWS = {};
+
+/* ---------- 概览 ---------- */
+VIEWS.home = {
+  render: function(s){
+    var sum = s.summary;
+    var credits = sum.credits;
+    var accs = s.accounts.slice().sort(function(a,b){ return (b.credits||0)-(a.credits||0); });
+    var maxC = Math.max.apply(null, accs.map(function(a){ return a.credits||0; }).concat([100]));
+
+    var html = '<div class="grid g4" style="margin-bottom:14px">' +
+      stat('账号总数', num(sum.total), sum.enabled + ' 个启用 · ' + sum.withToken + ' 个已授权', 'acc', 'users') +
+      stat('今日已签', num(sum.todayDone) + (sum.enabled ? ' / ' + sum.enabled : ''), sum.pending > 0 ? (sum.pending + ' 个待签到') : '全部完成', sum.pending>0?'warn':'ok', 'check') +
+      stat('积分合计', fmtCredit(credits), sum.creditsKnownCount + ' 个账号可读 · 账号总积分', '', 'wave') +
+      stat('异常账号', num(sum.errored), sum.errored ? '需要处理' : '运行正常', sum.errored?'bad':'ok', 'alert') +
+      '</div>';
+
+    /* 系统状态条 */
+    var px = s.settings.proxy, ck = s.settings.checkin, mw = s.settings.meow;
+    var sysCells = [
+      { k:'网关', v: px.enabled ? '在线' : '离线', on: px.enabled, d:'OpenAI 兼容' },
+      { k:'自动签到', v: ck.autoEnabled ? '运行中' : '已停用', on: !!ck.autoEnabled, d: ck.autoEnabled ? ('每日 ' + ck.time) : '手动触发' },
+      { k:'小喵巡检', v: mw.enabled ? '运行中' : '已停用', on: !!mw.enabled, d: mw.enabled ? (mw.intervalMinutes + ' 分钟/轮') : '不自动派出' },
+      { k:'模型池', v: num(s.models || 0), on: true, d:'个可用模型' }
+    ];
+    html += '<div class="card sysbar" style="margin-bottom:14px">' +
+      sysCells.map(function(c){
+        return '<div class="syscell"><span class="dot '+(c.on?'':'off')+'"></span>' +
+          '<div class="t"><b>'+esc(c.v)+'</b><span>'+esc(c.k)+' · '+esc(c.d)+'</span></div></div>';
+      }).join('') + '</div>';
+
+    /* 积分分布：按账号总积分排序 */
+    html += '<div class="card"><div class="card-h"><h3>积分分布</h3><span class="grow"></span>' +
+      '<span class="tiny">账号总积分</span>' +
+      '<button class="btn sm" data-act="refreshAll">'+icon('refresh',13)+'刷新</button></div>';
+    if (!accs.length){
+      html += '<div class="empty"><b>还没有账号</b>点右上角「扫码登录」最快，微信扫一下就行</div>';
+    } else {
+      html += '<div style="display:flex;flex-direction:column;gap:13px">' + accs.map(function(a){
+        var pct = a.credits === null ? 0 : Math.max(2, Math.round((a.credits||0)/maxC*100));
+        var low = a.credits !== null && a.credits < 200;
+        var total = (a.creditsTotal === null || a.creditsTotal === undefined) ? null : a.creditsTotal;
+        var used = (a.creditsUsed === null || a.creditsUsed === undefined) ? null : a.creditsUsed;
+        var tail = '';
+        if (total !== null && total !== a.credits) tail += ' / 额度 ' + fmtCredit(total);
+        if (used !== null && used > 0) tail += ' / 已用 ' + fmtCredit(used);
+        var hchip = creditChip(a);
+        return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;gap:12px">' +
+          '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(a.nickname)+'</span>' +
+          '<span class="mono" style="color:var(--tx2);white-space:nowrap;display:flex;align-items:baseline;gap:8px">' +
+            '<b style="color:#d7ecff">'+fmtCredit(a.credits)+'</b>' +
+            (hchip.html ? '<span class="exp ' + hchip.cls + '" title="' + esc(hchip.tip) + '">' + hchip.html + '</span>' : '') +
+            (tail ? '<span style="color:var(--tx3)">'+esc(tail)+'</span>' : '') +
+          '</span></div>' +
+          '<div class="bar '+(low?'low':'')+'"><i style="width:'+pct+'%"></i></div></div>';
+      }).join('') + '</div>';
+    }
+    html += '</div>';
+
+    return html;
+  },
+  after: function(s){
+    el('topActions').innerHTML =
+      '<button class="btn" data-act="refreshAll">'+icon('refresh',14)+'检查全部</button>' +
+      '<button class="btn primary" data-act="smslogin">'+icon('key',14)+'手机号登录</button>' +
+      '<button class="btn" data-act="add">'+icon('plus',14)+'手动新增</button>';
+  }
+};
+
+function stat(k, v, d, cls, ic){
+  return '<div class="stat '+(cls||'')+'"><div class="k">'+icon(ic||'list',13)+esc(k)+'</div>' +
+    '<div class="v">'+v+'</div><div class="d">'+esc(d||'')+'</div></div>';
+}
+
+/* ============ 积分 / 保活 / 错峰 辅助 ============
+ * 积分实时值与到期明细来自 /api/credits（POST /api/credits/refresh 拉上游），
+ * 不落在 /api/state 里，所以单独缓存一份；界面上的数字优先用实时缓存，
+ * 拿不到时退回 /api/state 的账号快照（标「缓存」而不是「实时」）。
+ */
+var CREDV = { data:null, at:0, nextExpire:null, err:'', ledger:null };
+var KA_CACHE = { data:null, err:'' };
+
+/* 后端配置项：字段缺失时给默认值，保证界面永远画得出来。
+ * 注意 settings.credits 在旧库里可能整段 undefined（store 默认值没有这段），
+ * 此时后端是按「开 + 30 分钟」跑的，前端必须同口径，不能显示成「未配置」。
+ */
+function cfgCredits(){
+  var c = S.state && S.state.settings && S.state.settings.credits;
+  if (!c || typeof c !== 'object') return { enabled:true, refreshMinutes:30 };
+  return {
+    enabled: c.enabled !== false,
+    refreshMinutes: Math.max(1, Number(c.refreshMinutes) || 30)
+  };
+}
+function cfgKeepalive(){
+  var k = S.state && S.state.settings && S.state.settings.keepalive;
+  if (!k || typeof k !== 'object') return { enabled:false, renewDaysThreshold:3, activeReport:false, intervalMinutes:720 };
+  return {
+    enabled: k.enabled === true,
+    renewDaysThreshold: (k.renewDaysThreshold === undefined || k.renewDaysThreshold === null) ? 3 : Number(k.renewDaysThreshold)||0,
+    activeReport: k.activeReport === true,
+    intervalMinutes: (k.intervalMinutes === undefined || k.intervalMinutes === null) ? 720 : Number(k.intervalMinutes)||0
+  };
+}
+function cfgSchedule(){
+  var s = S.state && S.state.settings && S.state.settings.schedule;
+  if (!s || typeof s !== 'object') return { randomDelayMinutes:0, accountDelayMinSeconds:0, accountDelayMaxSeconds:0 };
+  return {
+    randomDelayMinutes: Number(s.randomDelayMinutes)||0,
+    accountDelayMinSeconds: Number(s.accountDelayMinSeconds)||0,
+    accountDelayMaxSeconds: Number(s.accountDelayMaxSeconds)||0
+  };
+}
+function clampNum(node, min, max, dft){
+  var v = node ? Number(node.value) : NaN;
+  if (!isFinite(v)) v = dft;
+  return Math.max(min, Math.min(max, Math.round(v)));
+}
+/* 调度器的 NextIn 都是秒（null = 该功能未启用）；这里统一成人话 */
+function nextInText(sec){
+  var s = Number(sec);
+  if (sec === null || sec === undefined || !isFinite(s)) return '';
+  if (s <= 0) return '即将执行';
+  if (s < 60) return Math.round(s) + ' 秒后';
+  if (s < 3600) return Math.round(s / 60) + ' 分钟后';
+  return (Math.round(s / 360) / 10) + ' 小时后';
+}
+/* 503 = 模块未就绪（后端没加载 lib 或路由没接），要给一句人能看懂的话 */
+function apiErrText(err, label){
+  var name = label || '模块';
+  if (!err) return name + '不可用';
+  if (err.status === 503) return name + '未就绪：后端暂未加载该模块（重启服务后重试）';
+  if (err.status === 404) return name + '接口不存在：服务端版本较旧，重启后再试';
+  return err.message || (name + '请求失败');
+}
+
+/* 保存一组设置并回读校验：POST 返回 200 但字段没落库时（老版本后端会静默丢弃未知键），
+ * 界面被 refresh 弹回旧值，用户会以为是自己点坏了。这里直接说出来，不假装保存成功。 */
+async function saveSection(key, val){
+  var body = {};
+  body[key] = val;
+  var r = await api('/api/settings', { body: body });
+  var got = r && r.settings && r.settings[key];
+  if (!got || typeof got !== 'object'){
+    toast('设置已提交，但回读不到 settings.' + key + '（可能未落库，请刷新后确认，服务端日志有原因）', 'warn');
+    return false;
+  }
+  return true;
+}
+
+/* 到期倒计时：<3 天红、<7 天黄、其它灰 */
+function expireInfo(ts){
+  var t = Number(ts) || 0;
+  if (!t) return { text:'无到期日', cls:'calm', days:null };
+  var left = t - Date.now();
+  if (left <= 0) return { text:'已过期', cls:'bad', days:0 };
+  var days = left / 86400000;
+  var text;
+  // 天数按 floor 与后端 daysLeft 口径一致（8.4 天 → 8 天）；不足 1 天走小时/分钟，比「0 天后」有用
+  if (days >= 1) text = Math.floor(days) + ' 天后到期';
+  else {
+    var h = Math.floor(left / 3600000);
+    text = h >= 1 ? (h + ' 小时后到期') : (Math.max(1, Math.floor(left / 60000)) + ' 分钟后到期');
+  }
+  return { text:text, cls: days < 3 ? 'bad' : (days < 7 ? 'warn' : 'calm'), days:days };
+}
+
+/* 「实时 / 缓存 N 分前」：由 data-live-at 打点，全局 1 秒滴答刷新。
+ * 超过 900 秒按「数据较旧」标黄（后端 staleSeconds 同一口径），提醒点一下刷新。 */
+function liveText(at){
+  var sec = Math.max(0, Math.floor((Date.now() - (Number(at) || 0)) / 1000));
+  if (sec < 20) return { text:'实时', fresh:true, stale:false };
+  var stale = sec > 900;
+  var text;
+  if (sec < 60) text = '缓存 ' + sec + 's 前';
+  else if (sec < 3600) text = '缓存 ' + Math.floor(sec / 60) + ' 分前';
+  else text = '缓存 ' + Math.floor(sec / 3600) + ' 小时前';
+  return { text: (stale ? '数据较旧 · ' : '') + text, fresh:false, stale:stale };
+}
+function liveTag(at){
+  var t = Number(at) || 0;
+  if (!t) return '<span class="live">未同步</span>';
+  var lt = liveText(t);
+  return '<span class="live' + (lt.fresh ? ' fresh' : lt.stale ? ' stale' : '') + '" data-live-at="'+t+'">' + lt.text + '</span>';
+}
+setInterval(function(){
+  var nodes = document.querySelectorAll('[data-live-at]');
+  for (var i = 0; i < nodes.length; i++){
+    var lt = liveText(nodes[i].getAttribute('data-live-at'));
+    nodes[i].textContent = lt.text;
+    if (lt.fresh){ nodes[i].classList.add('fresh'); nodes[i].classList.remove('stale'); }
+    else if (lt.stale){ nodes[i].classList.add('stale'); nodes[i].classList.remove('fresh'); }
+    else { nodes[i].classList.remove('fresh'); nodes[i].classList.remove('stale'); }
+  }
+}, 1000);
+
+/* 统一口径：/api/state 的账号与 /api/credits 的账号字段名不完全一致，
+ * 这里归一成 { at, credits, packages, nextAt, nextCred }。
+ * /api/state 没有 nextExpireAt，就从 packages 里自己挑最近一笔未过期且有余额的。 */
+function accCreditInfo(a){
+  a = a || {};
+  var pkgs = [];
+  if (Array.isArray(a.packages)) pkgs = a.packages;
+  var at = Number(a.at || a.quotaAt || 0) || 0;
+  var nextAt = Number(a.nextExpireAt) || 0;
+  var nextCred = a.nextExpireCredits;
+  if (!nextAt && pkgs.length){
+    var best = null;
+    for (var i = 0; i < pkgs.length; i++){
+      var p = pkgs[i] || {};
+      var e = Number(p.expireAt) || 0;
+      if (!e || e <= Date.now()) continue;
+      if (p.remain !== null && p.remain !== undefined && Number(p.remain) <= 0) continue;
+      if (!best || e < Number(best.expireAt)) best = p;
+    }
+    if (best){ nextAt = Number(best.expireAt) || 0; nextCred = best.remain; }
+  }
+  return { at:at, credits:a.credits, packages:pkgs, nextAt:nextAt, nextCred:nextCred };
+}
+
+/* 悬停看全部资源包：额度 / 到期 / 来源，过期包与赠送包都标出来 */
+function packageTip(pkgs, nextAt, nextCred){
+  var hasCred = (nextCred !== null && nextCred !== undefined && !isNaN(Number(nextCred)));
+  if (!pkgs || !pkgs.length){
+    if (!nextAt) return '上游未下发资源包明细';
+    return '最近到期 ' + dt(nextAt) + (hasCred ? (' · ' + fmtCredit(nextCred) + ' 积分') : '');
+  }
+  return pkgs.map(function(p){
+    var remain = (p.remain === null || p.remain === undefined) ? '?' : fmtCredit(p.remain);
+    var total = (p.total === null || p.total === undefined) ? '?' : fmtCredit(p.total);
+    var exp = p.expired ? '已过期' : (p.expireAt ? (dt(p.expireAt) + ' · ' + expireInfo(p.expireAt).text) : '无到期日（不限期）');
+    var tag = p.giftTag ? '［赠送］' : '';
+    return tag + (p.name || '资源包') + '：剩 ' + remain + ' / ' + total + ' · ' + exp;
+  }).join('\n');
+}
+function creditChip(a){
+  var info = accCreditInfo(a);
+  if (!info.nextAt) return { html:'', cls:'calm', tip:packageTip(info.packages, 0, null) };
+  var exp = expireInfo(info.nextAt);
+  var hasCred = (info.nextCred !== null && info.nextCred !== undefined && !isNaN(Number(info.nextCred)));
+  return {
+    // 上游可能只给到期时刻不给那一笔的余量，此时不要显示成「— · N 天后到期」
+    html: (hasCred ? (fmtCredit(info.nextCred) + ' · ') : '') + exp.text,
+    cls: exp.cls,
+    tip: packageTip(info.packages, info.nextAt, info.nextCred)
+  };
+}
+function creditSummaryOf(list){
+  var out = { total:0, known:0, nextAt:0, nextCred:0, soon7:0, soon7cnt:0, soon3:0, paused:0 };
+  (list || []).forEach(function(a){
+    var c = Number(a.credits);
+    if (a.credits !== null && a.credits !== undefined && isFinite(c)){ out.total += c; out.known += 1; }
+    if (a.paused) out.paused += 1;
+    var info = accCreditInfo(a);
+    if (!info.nextAt) return;
+    if (!out.nextAt || info.nextAt < out.nextAt){ out.nextAt = info.nextAt; out.nextCred = info.nextCred; }
+    var days = (info.nextAt - Date.now()) / 86400000;
+    if (days <= 7){ out.soon7 += Number(info.nextCred)||0; out.soon7cnt += 1; }
+    if (days <= 3) out.soon3 += Number(info.nextCred)||0;
+  });
+  return out;
+}
+
+/* ---------- 积分 ---------- */
+var LEDGER_REASON = { checkin:'签到', travel:'旅行', task:'任务', refresh:'刷新', observed:'巡查' };
+
+function creditsRowHtml(a){
+  var info = accCreditInfo(a);
+  var chip = creditChip(a);
+  var hasCred = (info.nextCred !== null && info.nextCred !== undefined && !isNaN(Number(info.nextCred)));
+  var pausedPill = a.paused
+    ? '<span class="pill ' + (a.pauseMode === 'forward-only' ? 'warn' : 'bad') + '"' +
+      (a.pausedAt ? ' title="停用于 ' + esc(dt(a.pausedAt)) + '"' : '') + '>' +
+      (a.pauseMode === 'forward-only' ? '仅停转发' : '已停用') + '</span>'
+    : '';
+  var sub;
+  if (info.nextAt) sub = expireInfo(info.nextAt).text + (hasCred ? (' · ' + fmtCredit(info.nextCred) + ' 积分') : ' · 到期额度未下发');
+  else sub = info.packages.length ? '无到期日（不限期资源包）' : '暂无到期信息';
+  if (info.at) sub += ' · ' + fromNow(info.at) + '同步';
+  var acts = '<button class="btn sm" data-act="creditsRefreshOne" data-id="'+esc(a.id)+'">'+icon('refresh',12)+'刷新积分</button>' +
+    (a.paused
+      ? '<button class="btn sm" data-act="resumeAccount" data-id="'+esc(a.id)+'" title="恢复启用">'+icon('play',12)+'恢复</button>'
+      : '<button class="btn sm ghost" data-act="pauseAccount" data-id="'+esc(a.id)+'" title="临时停用">'+icon('clock',12)+'停用</button>');
+  return '<div class="item">' +
+    '<div class="ico ' + (chip.cls === 'bad' ? 'bad' : chip.cls === 'warn' ? 'warn' : '') + '">' + icon('wave',14) + '</div>' +
+    '<div class="txt"><b>' + esc(a.nickname || a.id) + ' ' + pausedPill + '</b>' +
+      '<span>' + esc(sub) + '</span></div>' +
+    '<div class="acts">' +
+      '<span class="cnum"><b style="font-size:16px;color:#d5eaff;font-variant-numeric:tabular-nums">' + fmtCredit(a.credits) + '</b>' + liveTag(info.at) + '</span>' +
+      (chip.html ? '<span class="exp ' + chip.cls + '" title="' + esc(chip.tip) + '">' + chip.html + '</span>' : '') +
+      acts +
+    '</div></div>';
+}
+function creditsRowsHtml(){
+  var list = (CREDV.data && CREDV.data.length) ? CREDV.data : ((S.state && S.state.accounts) || []);
+  if (!list.length) return '<div class="empty"><b>还没有账号</b><span>先到「账号」页添加账号，才能看积分</span></div>';
+  return list.map(creditsRowHtml).join('');
+}
+async function loadCredits(){
+  var box = el('credAccBox');
+  if (!box) return;
+  try{
+    var r = await api('/api/credits');
+    if (el('credAccBox') !== box) return;
+    CREDV.data = r.accounts || [];
+    CREDV.at = r.at || Date.now();
+    CREDV.nextExpire = r.nextExpire || null;
+    CREDV.err = '';
+    box.innerHTML = creditsRowsHtml();
+    paintCreditsStats();
+  }catch(err){
+    if (el('credAccBox') !== box) return;
+    CREDV.err = apiErrText(err, '积分');
+    box.innerHTML = '<div class="empty"><b>积分模块不可用</b><span>' + esc(CREDV.err) + '</span></div>';
+  }
+}
+function paintCreditsStats(){
+  var box = el('credStats');
+  if (!box) return;
+  var list = (CREDV.data && CREDV.data.length) ? CREDV.data : ((S.state && S.state.accounts) || []);
+  box.innerHTML = creditsStatsHtml(list);
+}
+function creditsStatsHtml(list){
+  var sum = creditSummaryOf(list);
+  var cr = cfgCredits();
+  var sched = (S.state && S.state.scheduler) || {};
+  var nex = sum.nextAt ? expireInfo(sum.nextAt) : null;
+  var cNext = nextInText(sched.creditsNextIn);
+  return '<div class="grid g4" style="margin-bottom:14px">' +
+    stat('积分合计', fmtCredit(sum.total), sum.known + ' 个账号可读 · 实时值', '', 'wave') +
+    stat('最近到期', sum.nextAt ? fmtCredit(sum.nextCred) : '—',
+      nex ? (dt(sum.nextAt) + ' · ' + nex.text) : '上游未下发有效期',
+      nex && nex.cls === 'bad' ? 'bad' : (nex && nex.cls === 'warn' ? 'warn' : ''), 'clock') +
+    stat('7 天内到期', sum.soon7 ? fmtCredit(sum.soon7) : (sum.soon7cnt ? '—' : '0'),
+      sum.soon7cnt
+        ? (sum.soon7cnt + ' 个账号 7 天内到期' + (sum.soon7 ? '，合计即将作废' : '（上游未下发额度）'))
+        : '近期没有积分要过期',
+      sum.soon3 ? 'bad' : (sum.soon7cnt ? 'warn' : 'ok'), 'alert') +
+    stat('自动刷新', cr.enabled ? (cr.refreshMinutes + ' 分钟') : '已关闭',
+      // creditsNextIn 指「定时全量刷新」的下一轮（基于 lastCreditsAt），
+      // 单账号手动刷新不会重置它，所以这里必须写明「全量」，否则用户会以为倒计时没动是坏了
+      cr.enabled ? (cNext ? ('自动全量刷新：' + cNext) : '后台定时全量刷新') : '只在你点刷新时查',
+      cr.enabled ? 'ok' : 'warn', 'refresh') +
+    '</div>';
+}
+async function loadLedger(){
+  var box = el('credLedgerBox');
+  if (!box) return;
+  box.innerHTML = '<div class="tiny">读取中…</div>';
+  try{
+    var r = await api('/api/credits/ledger?limit=100');
+    if (el('credLedgerBox') !== box) return;
+    CREDV.ledger = r.items || [];
+    paintLedger();
+  }catch(err){
+    if (el('credLedgerBox') !== box) return;
+    box.innerHTML = '<div class="empty"><b>流水不可用</b><span>' + esc(apiErrText(err, '积分')) + '</span></div>';
+  }
+}
+function paintLedger(){
+  var box = el('credLedgerBox');
+  if (!box) return;
+  var items = CREDV.ledger || [];
+  if (!items.length){
+    box.innerHTML = '<div class="empty"><b>还没有积分变动记录</b><span>签到、旅行、任务领到积分后会记在这里</span></div>';
+    return;
+  }
+  box.innerHTML = '<div class="ledger">' + items.map(function(it){
+    var d = Number(it.delta) || 0;
+    var up = d >= 0;
+    return '<div class="lg-row">' +
+      '<span class="t">' + esc(dt(it.at)) + '</span>' +
+      '<span class="who">' + esc(it.nickname || it.accId || '未知账号') +
+        ' <span class="pill">' + esc(LEDGER_REASON[it.reason] || it.reason || '变动') + '</span></span>' +
+      '<span class="d delta ' + (up ? 'up' : 'down') + '">' + (up ? '+' : '') + fmtCredit(d) + '</span>' +
+      '<span class="t">' + fmtCredit(it.before) + ' → ' + fmtCredit(it.after) + '</span>' +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+VIEWS.credits = {
+  render: function(s){
+    var list = (CREDV.data && CREDV.data.length) ? CREDV.data : (s.accounts || []);
+    var html = '<div id="credStats">' + creditsStatsHtml(list) + '</div>';
+
+    html += '<div class="card" style="margin-bottom:14px"><div class="card-h"><h3>账号积分与到期</h3><span class="grow"></span>' +
+      '<span class="tiny">余额旁的时间是最近一笔到期</span>' +
+      '<button class="btn sm" data-act="creditsRefresh">' + icon('refresh',13) + '刷新全部积分</button>' +
+      '</div><div class="ledger" id="credAccBox">' +
+      ((CREDV.data && CREDV.data.length) ? creditsRowsHtml() : '<div class="tiny">正在读取实时积分…</div>') +
+      '</div></div>';
+
+    html += '<div class="card"><div class="card-h"><h3>积分流水</h3><span class="grow"></span>' +
+      '<span class="tiny">最近 100 条 · 正增涨色 / 负减跌色</span>' +
+      '<button class="btn sm" data-act="ledgerRefresh">' + icon('refresh',13) + '刷新流水</button></div>' +
+      '<div id="credLedgerBox"><div class="tiny">读取中…</div></div>' +
+      '<div class="tiny" style="margin-top:10px;line-height:1.7">变动归因按动作时间窗推断：签到 / 旅行 / 任务领取优先，其次是手动刷新（reason=refresh）与后台巡查（observed）。' +
+      '积分按套餐分批过期，过期即作废，所以到期时间要盯最近一笔。</div></div>';
+    return html;
+  },
+  after: function(){
+    el('topActions').innerHTML =
+      '<button class="btn" data-act="creditsRefresh">' + icon('refresh',14) + '刷新全部积分</button>';
+    // 首次进入用 /api/credits 覆盖快照；已有缓存也重拉一次，保证「实时」名副其实
+    loadCredits();
+    loadLedger();
+  }
+};
+
+/* ---------- 运行日志（独立页） ---------- */
+var LOGV = { level:'all', q:'', timer:null, data:null, counts:{info:0,warn:0,error:0,other:0}, total:0, auto:false };
+
+function logLevelClass(lv){
+  if (lv === 'info') return 'info';
+  if (lv === 'warn' || lv === 'warn2') return 'warn';
+  if (lv === 'error') return 'error';
+  return 'other';
+}
+function logLevelLabel(lv){
+  if (lv === 'info') return 'INFO';
+  if (lv === 'warn' || lv === 'warn2') return 'WARN';
+  if (lv === 'error') return 'ERROR';
+  return String(lv || 'LOG').toUpperCase();
+}
+function logTime(iso){
+  var d = new Date(iso);
+  var p = function(x){ return String(x).padStart(2,'0'); };
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+}
+function logFilterRows(){
+  var all = LOGV.data || [];
+  var q = LOGV.q.trim().toLowerCase();
+  return all.filter(function(l){
+    if (LOGV.level !== 'all' && logLevelClass(l.level) !== LOGV.level) return false;
+    if (q && String(l.message || '').toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+}
+function logRowsHtml(){
+  var rows = logFilterRows();
+  if (!rows.length){
+    return '<div class="log-empty">' + ((LOGV.data && LOGV.data.length) ? '没有匹配的日志记录' : '暂无日志记录') + '</div>';
+  }
+  return rows.map(function(l){
+    var lc = logLevelClass(l.level);
+    return '<div class="lrow log-row-'+lc+'">' +
+      '<span class="t">'+esc(logTime(l.at))+'</span>' +
+      '<span class="lv lv-'+lc+'">'+esc(logLevelLabel(l.level))+'</span>' +
+      '<span class="m">'+esc(l.message)+'</span>' +
+      '</div>';
+  }).join('');
+}
+function paintLogs(){
+  var box = el('logRows');
+  if (box) box.innerHTML = logRowsHtml();
+  var cnt = el('logCount');
+  if (cnt) cnt.textContent = logFilterRows().length + ' / ' + ((LOGV.data && LOGV.data.length) || 0) + ' 条';
+  var tot = el('logTotal');
+  if (tot) tot.textContent = '库中共 ' + (LOGV.total || 0) + ' 条';
+  var fs = el('logFilterStats');
+  if (fs){
+    fs.innerHTML =
+      '<span>INFO <b style="color:#7dd3fc">'+(LOGV.counts.info||0)+'</b></span>' +
+      '<span class="sep"></span>' +
+      '<span>WARN <b style="color:#fcd34d">'+(LOGV.counts.warn||0)+'</b></span>' +
+      '<span class="sep"></span>' +
+      '<span>ERROR <b style="color:#fda4af">'+(LOGV.counts.error||0)+'</b></span>';
+  }
+}
+async function loadLogs(){
+  try{
+    var r = await api('/api/logs?limit=200');
+    LOGV.data = r.logs || [];
+    LOGV.counts = r.counts || LOGV.counts;
+    LOGV.total = r.total || 0;
+    paintLogs();
+  }catch(e){
+    var box = el('logRows');
+    if (box) box.innerHTML = '<div class="log-empty">读取失败：' + esc(e.message) + '</div>';
+  }
+}
+function logAutoRefresh(on){
+  if (LOGV.timer){ clearInterval(LOGV.timer); LOGV.timer = null; }
+  if (on) LOGV.timer = setInterval(loadLogs, 5000);
+}
+
+/* ---------- 账号 ---------- */
+VIEWS.accounts = {
+  render: function(s){
+    var html = '';
+    if (!s.accounts.length){
+      html = '<div class="card"><div class="empty" style="padding:56px 16px">' +
+        '<b>还没有添加任何账号</b>最省事的方式是扫码：服务器渲染登录二维码，你微信扫一下即可，不用手抄 Cookie' +
+        '<div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
+        '<button class="btn primary" data-act="smslogin">'+icon('key',14)+'手机号登录</button>' +
+        '<button class="btn" data-act="add">'+icon('plus',14)+'手动新增</button>' +
+        '<button class="btn" data-act="pairing">'+icon('key',14)+'获取配对码</button></div></div></div>';
+      return html;
+    }
+    var maxC = Math.max.apply(null, s.accounts.map(function(a){ return a.credits||0; }).concat([100]));
+    html = '<div class="accs">' + s.accounts.map(function(a){
+      var pct = a.credits === null ? 0 : Math.max(3, Math.round((a.credits||0)/maxC*100));
+      var low = a.credits !== null && a.credits < 200;
+      var initial = (a.nickname||'A').trim().charAt(0).toUpperCase();
+      var pills = '';
+      if (a.checkin.todayDone) pills += '<span class="pill ok">今日已签</span>';
+      else if (a.hasToken && a.enabled) pills += '<span class="pill warn">待签到</span>';
+      if (a.checkin.streakDays) pills += '<span class="pill">连续 '+a.checkin.streakDays+' 天</span>';
+      if (a.planName) pills += '<span class="pill acc">'+esc(a.planName)+'</span>';
+      if (a.daysLeft !== null && a.daysLeft !== undefined){
+        pills += '<span class="pill '+(a.daysLeft<0?'bad':a.daysLeft<=5?'warn':'')+'">' +
+          (a.daysLeft < 0 ? '已过期' : a.daysLeft + ' 天后到期') + '</span>';
+      }
+      if (!a.hasToken && !a.hasCookie) pills += '<span class="pill bad">缺凭证</span>';
+      // 临时停用：两档语义，灰显 + 角标，避免误以为账号还能转发
+      if (a.paused) pills += '<span class="pill ' + (a.pauseMode === 'forward-only' ? 'warn' : 'bad') + '"' +
+        (a.pausedAt ? ' title="停用于 ' + esc(dt(a.pausedAt)) + '"' : '') + '>' +
+        (a.pauseMode === 'forward-only' ? '仅停转发' : '已停用') + '</span>';
+      // 桌面身份 UUID：埋点上报必须带它（account.uid，UUID 形态），用数字 uin 会被服务端静默丢弃
+      if (a.uuid) pills += '<span class="pill" title="桌面身份 UUID：' + esc(a.uuid) + '">桌面ID ✓</span>';
+      else pills += '<span class="pill bad" title="缺桌面身份 UUID：上报事件不会被服务端归账，任务点不亮">桌面ID ✗</span>';
+      // 主数字 = 账号总积分（上游 TotalCredits = 当前可用额度）；
+      // 副行给出额度总量与已消耗
+      var cinfo = accCreditInfo(a);
+      var cchip = creditChip(a);
+      var remain = (a.creditsRemain === null || a.creditsRemain === undefined) ? null : a.creditsRemain;
+      var total = (a.creditsTotal === null || a.creditsTotal === undefined) ? null : a.creditsTotal;
+      var used = (a.creditsUsed === null || a.creditsUsed === undefined) ? null : a.creditsUsed;
+      var sub = '总积分';
+      // 上游分项累加与 TotalCredits 之间存在浮点尾差（如 2980.38000093 vs 2980.3800009300003），
+      // 按 1e-6 容差比较，避免把「可用」误判成与总积分不同的值而重复展示。
+      function nearEq(x, y) { return x !== null && y !== null && Math.abs(x - y) < 1e-6; }
+      if (total !== null && !nearEq(total, a.credits)) sub += ' · 额度 ' + fmtCredit(total);
+      if (used !== null && used > 0) sub += ' · 已用 ' + fmtCredit(used);
+      if (remain !== null && !nearEq(remain, a.credits)) sub += ' · 可用 ' + fmtCredit(remain);
+      if (a.quotaAt) sub += ' · ' + fromNow(a.quotaAt) + '更新';
+      return '<div class="acard '+(a.enabled?'':'off')+(a.paused?' paused':'')+(a.lastError?' err':'')+'">' +
+        '<div class="acard-top"><div class="avatar">'+esc(initial)+'</div>' +
+          '<div class="acard-name"><b>'+esc(a.nickname)+'</b><span>'+esc(a.uid.slice(0,8))+'…'+esc(a.uid.slice(-4))+'</span></div>' +
+          '<button class="switch '+(a.paused?'':'on')+'" data-act="'+(a.paused?'resumeAccount':'pauseAccount')+'" data-id="'+esc(a.id)+'" title="'+(a.paused?'已停用，点击恢复':'转发在线，点击停用（可选只停转发）')+'"></button></div>' +
+        '<div><div class="acard-credit"><div class="cnum"><b>'+fmtCredit(a.credits)+'</b>' + liveTag(cinfo.at) +
+            (cchip.html ? '<span class="exp ' + cchip.cls + '" title="' + esc(cchip.tip) + '">' + cchip.html + '</span>' : '') +
+            '<button class="btn sm ghost" data-act="creditsRefreshOne" data-id="'+esc(a.id)+'" title="实时查询积分与到期明细">'+icon('refresh',11)+'</button>' +
+          '</div><small>'+esc(sub)+'</small></div>' +
+          '<div class="bar '+(low?'low':'')+'" style="margin-top:7px"><i style="width:'+pct+'%"></i></div></div>' +
+        '<div class="acard-meta">'+pills+'</div>' +
+        (a.lastError ? '<div class="tiny" style="color:#ff9a99;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(a.lastError)+'</div>' : '') +
+        '<div class="acard-foot">' +
+          '<button class="btn sm" data-act="refresh" data-id="'+esc(a.id)+'">'+icon('refresh',12)+'刷新</button>' +
+          '<button class="btn sm" data-act="signone" data-id="'+esc(a.id)+'">'+icon('check',12)+'签到</button>' +
+          (a.phoneMasked ? '<button class="btn sm ghost" data-act="relogin" data-id="'+esc(a.id)+'" data-phone="'+esc(a.phoneMasked)+'" title="给 '+esc(a.phoneMasked)+' 发验证码重新登录">'+icon('key',12)+'重新登录</button>' : '') +
+          (a.paused
+            ? '<button class="btn sm" data-act="resumeAccount" data-id="'+esc(a.id)+'" title="恢复启用">'+icon('play',12)+'恢复</button>'
+            : '<button class="btn sm ghost" data-act="pauseAccount" data-id="'+esc(a.id)+'" title="临时停用（可选只停转发）">'+icon('clock',12)+'停用</button>') +
+          '<span class="grow"></span>' +
+          '<button class="btn sm ghost" data-act="edit" data-id="'+esc(a.id)+'" title="编辑">'+icon('edit',13)+'</button>' +
+          '<button class="btn sm ghost" data-act="del" data-id="'+esc(a.id)+'" title="删除">'+icon('trash',13)+'</button>' +
+        '</div></div>';
+    }).join('') + '</div>';
+    return html;
+  },
+  after: function(){
+    el('topActions').innerHTML =
+      '<button class="btn" data-act="pairing">'+icon('key',14)+'配对码</button>' +
+      '<button class="btn" data-act="refreshAll">'+icon('refresh',14)+'刷新全部</button>' +
+      '<button class="btn" data-act="add">'+icon('plus',14)+'手动新增</button>' +
+      '<button class="btn primary" data-act="smslogin">'+icon('key',14)+'手机号登录</button>';
+  }
+};
+
+/* ---------- 签到 ---------- */
+VIEWS.checkin = {
+  render: function(s){
+    var cfg = s.settings.checkin;
+    var allDates = {};
+    s.accounts.forEach(function(a){ (a.checkin.checkinDates||[]).forEach(function(d){ allDates[d]=true; }); });
+    var days = [];
+    for (var i = 89; i >= 0; i--){
+      var d = new Date(Date.now() - i*86400000);
+      days.push(d.toLocaleDateString('sv-SE'));
+    }
+    var done = days.filter(function(d){ return allDates[d]; }).length;
+
+    var html = '<div class="grid g3" style="margin-bottom:14px">' +
+      stat('今日进度', s.summary.todayDone + ' / ' + (s.summary.enabled||0), s.summary.pending>0?'还有 '+s.summary.pending+' 个待签':'今天都签完了', s.summary.pending>0?'warn':'ok','check') +
+      stat('90 天签到', done + ' 天', '按有签到记录的账号合并统计', '','list') +
+      stat('下次自动签到', s.scheduler.lastCheckinDate === s.today ? '今日已执行' : Math.round(s.scheduler.nextCheckinIn/60) + ' 分钟后', cfg.autoEnabled ? ('每日 ' + cfg.time) : '自动签到未开启', cfg.autoEnabled?'':'warn','clock') +
+      '</div>';
+
+    html += '<div class="card"><div class="card-h"><h3>今日签到明细</h3><span class="grow"></span>' +
+      '<button class="btn primary" data-act="signAll">'+icon('check',14)+'一键全部签到</button></div>';
+    if (!s.accounts.length){
+      html += '<div class="empty"><b>没有账号</b>先到「账号」页添加</div>';
+    } else {
+      html += '<div class="list">' + s.accounts.map(function(a){
+        var st = a.checkin.todayDone ? '<span class="pill ok">已签到</span>'
+          : a.hasToken ? '<span class="pill warn">待签到</span>' : '<span class="pill bad">缺令牌</span>';
+        var sk = a.streak || null;
+        var mile = '';
+        if (sk){
+          var t7 = (sk.tierStatus && sk.tierStatus['7d']) || {}, t14 = (sk.tierStatus && sk.tierStatus['14d']) || {}, t28 = (sk.tierStatus && sk.tierStatus['28d']) || {};
+          var tag = function(t){ return t.status==='redeemed'?'已兑':t.status==='available'?'可兑':'锁定'; };
+          mile = ' · 本月连登 '+(sk.days||0)+' 天' +
+            ' · 补登卡×'+(sk.makeupCards||0) +
+            ' · 抽奖×'+(a.lotteryChances!=null?a.lotteryChances:'?') +
+            ' · 档位['+tag(t7)+'/'+tag(t14)+'/'+tag(t28)+']';
+        }
+        return '<div class="item"><div class="ico '+(a.checkin.todayDone?'ok':a.hasToken?'warn':'bad')+'">' +
+          icon(a.checkin.todayDone?'check':'clock',13)+'</div>' +
+          '<div class="txt"><b>'+esc(a.nickname)+' '+st+'</b><span>' +
+            (a.checkin.lastAt ? (dt(a.checkin.lastAt)+' · '+esc(a.checkin.lastResult||'')) : '尚未执行') +
+            (a.checkin.streakDays?(' · 活动累计 '+a.checkin.streakDays+' 天'):'') +
+            mile +
+          '</span></div>' +
+          '<button class="btn sm" data-act="signone" data-id="'+esc(a.id)+'">签到</button></div>';
+      }).join('') + '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="grid g2" style="margin-top:14px">';
+    html += '<div class="card"><div class="card-h"><h3>自动签到</h3><span class="grow"></span>' +
+      '<button class="switch '+(cfg.autoEnabled?'on':'')+'" data-act="toggleAuto"></button></div>' +
+      '<div class="inline"><div class="field"><label>每日执行时间</label>' +
+        '<input type="time" id="ckTime" value="'+esc(cfg.time)+'"></div>' +
+        '<div class="field"><label>失败重试次数</label>' +
+        '<input type="number" id="ckRetry" min="0" max="5" value="'+(cfg.retry||0)+'"></div></div>' +
+      '<div class="field" style="margin-top:14px"><label class="tiny">' +
+        '<input type="checkbox" id="ckRefresh" '+(cfg.refreshQuotaAfter?'checked':'')+' style="width:auto;margin-right:6px">签到完成后自动刷新额度</label></div>' +
+      '<button class="btn primary" data-act="saveCheckin">'+icon('check',13)+'保存设置</button>' +
+      (s.scheduler.lastCheckinAt ? '<div class="tiny" style="margin-top:8px">上次执行：'+dt(s.scheduler.lastCheckinAt)+' · '+esc(s.scheduler.lastCheckinResult||'')+'</div>' : '') +
+      '<div class="tiny" style="margin-top:10px">服务端进程内定时器执行，页面关闭也会照常签到。跨天后自动重新触发。</div>' +
+      '</div>';
+
+    html += '<div class="card"><div class="card-h"><h3>签到日历</h3><span class="grow"></span><span class="tiny">近 90 天</span></div>' +
+      '<div class="heat">' + days.map(function(d){
+        var has = allDates[d];
+        return '<i class="'+(has?'on':'')+'" title="'+d+(has?' 有签到':'')+'"></i>';
+      }).join('') + '</div>' +
+      '<div class="legend"><i style="width:10px;height:10px;border-radius:3px;background:var(--panel3);display:inline-block"></i> 无记录' +
+      '<span style="width:10px"></span><i style="width:10px;height:10px;border-radius:3px;background:rgba(47,191,143,.65);display:inline-block"></i> 有签到</div>' +
+      '</div></div>';
+
+    return html;
+  },
+  after: function(){
+    el('topActions').innerHTML = '<button class="btn primary" data-act="signAll">'+icon('check',14)+'一键全部签到</button>';
+  }
+};
+
+/* ---------- 模型管理（白名单 + 时段免费自动选型）---------- */
+var MODELV = { data:null, at:0, loading:false };
+
+/**
+ * 拉取模型目录 + 促销状态。
+ * @param {boolean} force 强制绕过服务端缓存
+ */
+async function loadModelInfo(force){
+  if(MODELV.loading) return;
+  MODELV.loading = true;
+  try{
+    var r = await api('/api/models/info' + (force ? '?force=1' : ''));
+    MODELV.data = r; MODELV.at = Date.now();
+  }catch(e){
+    MODELV.data = { ok:false, error:String(e && e.message || e), models:[], promotions:[] };
+  }
+  MODELV.loading = false;
+  loadModelSync();
+  // 只在「用户没有正在勾选」时重渲染整页，避免把用户勾选状态冲掉。
+  // （modelSelAll/None/Free 只改 DOM 不调这里，所以勾选状态能保住）
+  if(S.view === 'proxy' && typeof renderView === 'function') renderView();
+}
+
+/** 模型目录自动同步状态 */
+async function loadModelSync(){
+  try{
+    var r = await api('/api/models/sync');
+    S.msync = r;
+    renderModelSync(r);
+  }catch(e){
+    renderModelSync(null);
+  }
+}
+
+function renderModelSync(m){
+  var box = document.getElementById('msyncBox');
+  if(!box) return;
+  if(!m){
+    box.innerHTML = '<div class="tiny">同步状态读取失败（可能未授权或接口异常）</div>';
+    return;
+  }
+  var h = '';
+  if(m.lastAt){
+    var t = new Date(m.lastAt).toLocaleString('zh-CN');
+    var res = m.lastResult || {};
+    var stTxt = res.ok
+      ? '<b style="color:#3ddc97">成功</b>'
+      : '<b style="color:#ff6b6b">失败</b> <span class="tiny">' + esc(res.error || '') + '</span>';
+    h += '<div style="font-size:13px;line-height:1.9">'
+      + '上次同步：' + esc(t) + ' · ' + stTxt + '<br>'
+      + '当前目录共 <b>' + (m.totalModels||0) + '</b> 个模型';
+    if(res.ok){
+      h += '　本次：新增 <b>' + (res.added||0) + '</b>　下架 <b>' + (res.removed||0) + '</b>　倍率变动 <b>' + (res.rateChanged||0) + '</b>';
+    }
+    h += '<br><span class="tiny">同步间隔 ' + (m.intervalHours||24) + ' 小时 · 新增的免费模型会自动加入白名单，下架的会自动移除</span></div>';
+  } else {
+    h += '<div class="tiny">还没有同步过。点右上角「立即同步」拉取官方最新目录。</div>';
+  }
+
+  var chs = m.changes || [];
+  if(chs.length){
+    h += '<div style="margin-top:10px;border-top:1px solid rgba(255,255,255,.08);padding-top:8px">'
+      + '<div class="tiny" style="margin-bottom:6px"><b>最近变更记录</b></div>';
+    for(var i = 0; i < Math.min(chs.length, 8); i++){
+      var c = chs[i];
+      var d = new Date(c.at).toLocaleString('zh-CN');
+      var parts = [];
+      (c.added||[]).forEach(function(a){ parts.push('<span style="color:#3ddc97">+ ' + esc(a.name||a.id) + (a.free?'(免费)':'') + '</span>'); });
+      (c.removed||[]).forEach(function(r){ parts.push('<span style="color:#ff6b6b">− ' + esc(r.name||r.id) + '</span>'); });
+      (c.rateChanged||[]).forEach(function(r){ parts.push('<span style="color:#ffd166">~ ' + esc(r.name||r.id) + ' ' + (r.from===null?'?':'x'+r.from) + '→' + (r.to===null?'?':'x'+r.to) + '</span>'); });
+      h += '<div style="font-size:12px;line-height:1.8"><span class="tiny">' + esc(d) + '</span>　' + parts.join('　') + '</div>';
+    }
+    h += '</div>';
+  }
+  box.innerHTML = h;
+}
+
+/** 倍率显示：无倍率标注的模型要明确区分于「便宜」 */
+function modelRateText(m){
+  if(m.rate === null || m.rate === undefined) return '<span class="tiny">无倍率标注</span>';
+  if(m.rate === 0) return '<b style="color:#3ddc97">免费</b>';
+  return 'x' + m.rate;
+}
+
+/** 自定义模型名的目标下拉选项（列出上游全部模型 + 当前值兜底） */
+function mmTargetOptions(models, current){
+  var opts = '';
+  var found = false;
+  for(var i = 0; i < (models||[]).length; i++){
+    var m = models[i];
+    var sel = (m.id === current) ? ' selected' : '';
+    if(sel) found = true;
+    var rateTxt = m.rate === null ? '无倍率' : (m.rate === 0 ? '★免费' : 'x'+m.rate);
+    opts += '<option value="'+esc(m.id)+'"'+sel+'>'+esc(m.name)+' · '+rateTxt+'</option>';
+  }
+  // 当前值不在目录里（模型下线了）也要能选回来，否则保存会把映射丢掉
+  if(current && !found){
+    opts = '<option value="'+esc(current)+'" selected>'+esc(current)+' ·（不在当前目录）</option>' + opts;
+  }
+  return opts;
+}
+
+/** 促销时段的中文描述 */
+function promoWindowText(p){  var sch = p.schedule || {};
+  if(Array.isArray(sch.daily) && sch.daily.length){
+    return sch.daily.map(function(d){ return d.start + '-' + d.end; }).join('、');
+  }
+  if(sch.validFrom) return String(sch.validFrom).slice(0,10) + ' ~ ' + String(sch.validUntil||'').slice(0,10);
+  return '不限时段';
+}
+
+function modelManagerHtml(s){
+  var d = MODELV.data;
+  var p = s.settings.proxy;
+  var wl = Array.isArray(p.modelWhitelist) ? p.modelWhitelist : [];
+
+  var head = '<div class="card"><div class="card-h"><h3>模型管理</h3><span class="grow"></span>' +
+    '<button class="btn sm" data-act="reloadModels">'+icon('refresh',13)+'刷新上游倍率</button></div>';
+
+  if(!d || !d.models || !d.models.length){
+    return head +
+      '<div class="empty"><b>'+(d && d.error ? '模型目录拉取失败' : '正在加载模型目录…')+'</b>' +
+      '<span>'+esc((d && d.error) || '正在从上游 /v3/config 拉取实时倍率与促销')+'</span></div></div>';
+  }
+
+  var body = '';
+
+  /* --- 状态条：当前生效模型 + 免费窗口倒计时 --- */
+  var picked = d.picked;
+  var freeNow = d.models.filter(function(m){ return m.rate === 0; });
+  var nextIn = d.nextFreeInMs;
+  var nextTxt = '';
+  if(nextIn !== null && nextIn !== undefined && nextIn >= 0){
+    var mins = Math.round(nextIn / 60000);
+    if(mins < 60) nextTxt = mins + ' 分钟后';
+    else if(mins < 60*24) nextTxt = Math.floor(mins/60) + ' 小时 ' + (mins%60) + ' 分后';
+    else nextTxt = Math.floor(mins/1440) + ' 天后';
+  }
+
+  body += '<div class="grid g3" style="margin-bottom:14px">' +
+    stat('当前生效模型', picked ? picked.name : (freeNow.length ? freeNow[0].name : '（未选）'),
+      picked ? (picked.free ? '免费时段 · 0 积分' : '倍率 x' + picked.rate) : '白名单为空',
+      picked && picked.free ? 'ok' : '', 'plug') +
+    stat('免费模型', freeNow.length + ' 个', freeNow.length ? freeNow.map(function(m){return m.id;}).join('、') : '当前无 0 倍率活动',
+      freeNow.length ? 'ok' : 'warn', 'gift') +
+    stat('下个免费窗口', nextTxt || '—', '按上游活动时段自动切换', '', 'clock') +
+    '</div>';
+
+  /* --- 自动选型开关 --- */
+  body += '<div class="rowline" style="margin-bottom:12px"><div class="t"><b>按时段自动选模型</b>' +
+    '<span>开启后：客户端没指定保留的模型时，自动用当前免费的（0 倍率）；没有免费的就用保留列表里倍率最低的</span></div>' +
+    '<button class="switch '+(p.autoSelectModel?'on':'')+'" data-act="toggleAutoSelect"></button></div>';
+
+  /* --- 白名单勾选 --- */
+  body += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+    '<label style="margin:0">保留的模型（'+wl.length+' / '+d.models.length+'）</label>' +
+    '<button class="btn sm ghost" data-act="modelSelAll">全选</button>' +
+    '<button class="btn sm ghost" data-act="modelSelNone">全不选</button>' +
+    '<button class="btn sm ghost" data-act="modelSelFree">只留免费</button>' +
+    '<span class="grow" style="flex:1"></span>' +
+    '<button class="btn primary sm" data-act="saveModelWhitelist">'+icon('check',12)+'保存</button>' +
+    '</div>';
+
+  body += '<div style="max-height:340px;overflow:auto;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:4px">';
+  for(var i = 0; i < d.models.length; i++){
+    var m = d.models[i];
+    var on = wl.indexOf(m.id) >= 0;
+    var badge = '';
+    if(m.rate === 0) badge = '<span class="tag" style="background:rgba(61,220,151,.16);color:#3ddc97">免费</span>';
+    else if(m.promotion && m.promotion.badge) badge = '<span class="tag tiny">'+esc(m.promotion.badge)+'</span>';
+    body += '<label class="rowline" style="margin:0;padding:5px 8px;cursor:pointer">' +
+      '<input type="checkbox" class="mwl" value="'+esc(m.id)+'"'+(on?' checked':'')+' style="flex:none;margin-right:8px">' +
+      '<div class="t" style="flex:1;min-width:0"><b style="font-weight:500">'+esc(m.name)+'</b>' +
+      '<span style="font-family:var(--font-mono);font-size:11px;opacity:.6">'+esc(m.id)+'</span></div>' +
+      '<div style="text-align:right;flex:none">'+modelRateText(m)+(badge?' '+badge:'')+'</div>' +
+      '</label>';
+  }
+  body += '</div>';
+
+  /* --- 自定义模型名（modelMap：自定义名 → 上游真实模型）--- */
+  var mm = (p.modelMap && typeof p.modelMap === 'object') ? p.modelMap : {};
+  var mmKeys = Object.keys(mm);
+  body += '<div style="margin-top:16px;font-size:13px;font-weight:500;margin-bottom:2px">自定义模型名</div>' +
+    '<div class="tiny" style="margin-bottom:8px">给模型起个自己的名字，客户端填这个名字即可调用。' +
+    '自定义名<b>永远按你指定的模型走</b>，不会被自动选型改写。</div>';
+
+  if(mmKeys.length){
+    body += '<div id="mmWrap">';
+    for(var mk = 0; mk < mmKeys.length; mk++){
+      var alias = mmKeys[mk], target = mm[alias];
+      body += '<div class="rowline" style="margin:0;padding:4px 0">' +
+        '<input class="mm-alias" value="'+esc(alias)+'" placeholder="自定义名" ' +
+        'style="flex:none;width:150px;margin-right:8px;font-family:var(--font-mono);font-size:12px">' +
+        '<span style="flex:none;opacity:.5;margin-right:8px">→</span>' +
+        '<select class="mm-target" style="flex:1;min-width:0">' +
+          mmTargetOptions(d.models, target) +
+        '</select>' +
+        '<button class="btn sm ghost" data-act="delModelMap" style="flex:none;margin-left:8px">删除</button>' +
+        '</div>';
+    }
+    body += '</div>';
+  } else {
+    body += '<div id="mmWrap"></div>';
+  }
+  body += '<div class="rowline" style="margin:0;padding:4px 0">' +
+    '<button class="btn sm" data-act="addModelMap">+ 新增自定义名</button>' +
+    '<span class="grow" style="flex:1"></span>' +
+    '<button class="btn primary sm" data-act="saveModelMap">'+icon('check',12)+'保存自定义名</button>' +
+    '</div>';
+
+  /* --- 促销清单 --- */
+  if(d.promotions && d.promotions.length){
+    body += '<div style="margin-top:14px;font-size:13px;font-weight:500;margin-bottom:6px">上游促销时段</div>' +
+      '<div style="max-height:180px;overflow:auto">';
+    for(var j = 0; j < d.promotions.length; j++){
+      var pr = d.promotions[j];
+      var isFree = pr.factor === 0 || (pr.discountedCredits !== null && pr.discountedCredits !== undefined && String(pr.discountedCredits).match(/^0(\.0+)?x?$/));
+      var st = pr.active ? '<span class="tag" style="background:rgba(61,220,151,.16);color:#3ddc97">进行中</span>'
+        : (pr.enabled ? '<span class="tag tiny">未开始/已结束</span>' : '<span class="tag tiny">已停用</span>');
+      body += '<div class="rowline" style="margin:0;padding:4px 0"><div class="t" style="flex:1;min-width:0">' +
+        '<b style="font-weight:500">'+(isFree ? '★ ' : '')+esc(pr.badge || pr.id)+'</b>' +
+        '<span>'+esc(pr.hover||'')+'</span></div>' +
+        '<div style="flex:none;text-align:right;font-size:12px">'+st+
+        '<div class="tiny" style="margin-top:2px">'+esc(promoWindowText(pr))+'</div></div></div>';
+    }
+    body += '</div>';
+  }
+
+  if(d.stale) body += '<div class="tiny" style="margin-top:10px;color:var(--color-text-warning)">上游拉取失败，展示的是上次缓存数据</div>';
+  body += '<div class="tiny" style="margin-top:6px">倍率数据来自上游 /v3/config 实时接口，每 5 分钟刷新一次。</div>';
+
+  // 模型目录自动同步状态（每天拉一次，新增免费自动入白名单、下架自动剔除）
+  body += '<div class="sec-head" style="margin-top:18px"><h3 style="margin:0;font-size:15px">模型目录自动同步</h3>'
+    + '<button class="btn sm ghost" data-act="modelSyncRun" style="margin-left:auto">立即同步</button></div>';
+  body += '<div id="msyncBox" class="card" style="margin-top:8px"><div class="tiny">读取中…</div></div>';
+
+  return head + body + '</div>';
+}
+
+/* ---------- 代理 ---------- */
+VIEWS.proxy = {
+  render: function(s){
+    // accessKey 不再由 /api/state 下发（防未授权者读取），改为 S.proxyKey 按需拉取。
+    // 这里的浅拷贝保证模板里读到的 p.accessKey 不会 undefined。
+    var p = Object.assign({}, s.settings.proxy, {
+      accessKey: (S.proxyKey !== undefined && S.proxyKey !== null && S.proxyKey !== '')
+        ? S.proxyKey
+        : (s.settings.proxy.accessKey || '（需填写授权码后查看）'),
+    });
+    var base = s.proxyBaseUrl;
+    var snippetOpenAI =
+      'from openai import OpenAI\n\nclient = OpenAI(\n    base_url="' + base + '",\n    api_key="' + p.accessKey + '"\n)\n\nresp = client.chat.completions.create(\n    model="default",\n    messages=[{"role":"user","content":"你好"}]\n)\nprint(resp.choices[0].message.content)';
+    var snippetCurl =
+      'curl ' + base + '/chat/completions \\\n  -H "Authorization: Bearer ' + p.accessKey + '" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model":"default","stream":true,"messages":[{"role":"user","content":"你好"}]}\'';
+    var snippetEnv =
+      '# 环境变量方式（多数 OpenAI 兼容客户端通用）\nexport OPENAI_BASE_URL="' + base + '"\nexport OPENAI_API_KEY="' + p.accessKey + '"';
+    var snippetWB =
+      '# WorkBuddy 桌面端「设置 → 模型 → 自定义模型」\n' +
+      '提供商：自定义 / Custom\n' +
+      '接口地址：' + base + '/chat/completions\n' +
+      'API Key：' + p.accessKey + '\n' +
+      '模型名称：deepseek-v4-pro  （或 glm-5.3 / kimi-k3-2 等，填 /v1/models 里的 id）\n' +
+      '高级工具：勾选「工具调用」';
+
+    var html = '<div class="grid g3" style="margin-bottom:14px">' +
+      stat('代理状态', p.enabled?'运行中':'已关闭', p.enabled?'可对外提供 OpenAI 兼容接口':'在下方开启', p.enabled?'ok':'warn','plug') +
+      stat('可用账号', String(s.summary.withToken), '按策略自动选择', '','users') +
+      stat('累计请求', num(s.stats.proxyTotal||0), '失败 ' + num(s.stats.proxyFail||0) + ' 次', '','wave') +
+      '</div>';
+
+    html += '<div class="card"><div class="card-h"><h3>接入信息</h3><span class="grow"></span>' +
+      '<button class="switch '+(p.enabled?'on':'')+'" data-act="toggleProxy" title="开启/关闭反向代理"></button></div>' +
+      '<div class="field"><label>Base URL</label>' +
+      '<div class="code" style="padding-right:76px"><button class="btn sm copy" data-copy="'+esc(base)+'">'+icon('copy',12)+'复制</button>'+esc(base)+'</div></div>' +
+      '<div class="field" style="margin-bottom:0"><label>API Key</label>' +
+      '<div class="code" style="padding-right:76px"><button class="btn sm copy" data-copy="'+esc(p.accessKey)+'">'+icon('copy',12)+'复制</button>'+esc(p.accessKey)+'</div></div>' +
+      '<div style="display:flex;gap:8px;margin-top:12px">' +
+      '<button class="btn sm" data-act="rotateKey">'+icon('refresh',12)+'重置密钥</button>' +
+      '<span class="tiny" style="align-self:center">密钥是访问 /v1 接口的唯一凭证，泄露后请立刻重置。</span></div>' +
+      '</div>';
+
+    html += '<div class="card"><div class="card-h"><h3>调度策略</h3></div>' +
+      '<div class="inline">' +
+      '<div class="field"><label>选择账号</label><select id="pxStrategy">' +
+      opt('balance','余额优先（默认）',p.strategy) +
+      opt('roundrobin','轮询',p.strategy) +
+      opt('drain','集中消耗（先耗尽一个）',p.strategy) +
+      '</select></div>' +
+      '<div class="field"><label>粘性会话（分钟）</label><input type="number" id="pxSticky" min="0" max="1440" value="'+(p.stickyTtlMin||0)+'"></div>' +
+      '<div class="field"><label>失败换号上限</label><input type="number" id="pxFailover" min="0" max="8" value="'+(p.maxFailover||0)+'"></div>' +
+      '</div>' +
+      '<div class="rowline" style="margin-top:6px"><div class="t"><b>允许匿名调用</b><span>开启后不带密钥也能调用 /v1，仅建议内网使用</span></div>' +
+      '<button class="switch '+(p.allowAnonymous?'on':'')+'" data-act="toggleAnon"></button></div>' +
+      '<div class="rowline" style="margin-top:6px"><div class="t"><b>缓存友好化</b><span>稳定工具顺序并归一化提示词里的时间戳，让上游提示词缓存命中。实测输入侧积分可降到 1/10～1/20</span></div>' +
+      '<button class="switch '+(p.cacheFriendly!==false?'on':'')+'" data-act="toggleCacheFriendly"></button></div>' +
+      '<div style="margin-top:14px"><button class="btn primary" data-act="saveProxy">'+icon('check',13)+'保存策略</button></div>' +
+      '</div>';
+
+    html += modelManagerHtml(s);
+
+    html += '<div class="card"><div class="card-h"><h3>接入示例</h3><span class="grow"></span>' +
+      '<span class="tiny">OpenAI 兼容协议</span></div>' +
+      '<div style="display:flex;gap:8px;margin-bottom:12px"><button class="btn sm" data-act="tab" data-tab="py">Python</button>' +
+      '<button class="btn sm" data-act="tab" data-tab="curl">curl</button>' +
+      '<button class="btn sm" data-act="tab" data-tab="env">环境变量</button>' +
+      '<button class="btn sm" data-act="tab" data-tab="wb">WorkBuddy 桌面端</button></div>' +
+      '<div class="code" id="snip" style="padding-right:76px">' +
+      '<button class="btn sm copy" data-copy="'+esc(snippetOpenAI)+'">'+icon('copy',12)+'复制</button>' + esc(snippetOpenAI) + '</div>' +
+      '<div class="tiny" style="margin-top:10px">模型名可填 <span class="mono">default</span>，也可以填上面模型列表里的任意 id；上游不支持时会返回明确错误。</div>' +
+      '</div>';
+
+    html += '<div class="card"><div class="card-h"><h3>把闲置账号挂到主 WorkBuddy</h3></div>' +
+      '<div class="tiny" style="margin-bottom:12px">本工作台已内置 OpenAI 兼容网关：主 WorkBuddy 桌面端添加「自定义模型」后，' +
+      '对话请求会由网关按策略从池中账号转发，用的是闲置账号的积分，主账号上下文不丢、无需切换账号。</div>' +
+      '<div class="field"><label>批量写入客户端配置（在本机执行）</label>' +
+      '<div class="code" style="padding-right:76px"><button class="btn sm copy" data-copy="'+esc('node tools/gen_client_models.js '+base+' '+p.accessKey)+'">'+icon('copy',12)+'复制</button>' +
+      esc('node tools/gen_client_models.js '+base+' '+p.accessKey) + '</div></div>' +
+      '<div class="tiny" style="margin-top:10px">执行后完全退出 WorkBuddy 再重新打开，在模型选择器的「自定义模型」分组里即可看到池内模型。' +
+      '注意：接口地址必须写到 <span class="mono">/chat/completions</span> 结尾，工作台已自动处理流式与非流式两种形态。</div>' +
+      '</div>';
+
+    /* 积分消耗明细 */
+    var ul = s.usageLog || [];
+    var today = (s.stats.byDay && s.stats.byDay[Object.keys(s.stats.byDay||{}).sort().slice(-1)[0]]) || {};
+    var dayKey = Object.keys(s.stats.byDay||{}).sort().slice(-1)[0] || '';
+    var dayStat = dayKey ? (s.stats.byDay[dayKey]||{}) : {};
+    var todayCredits = Number(dayStat.credits)||0;
+    var todayTokens = Number(dayStat.tokens)||0;
+    html += '<div class="card"><div class="card-h"><h3>积分消耗明细</h3><span class="grow"></span>' +
+      '<span class="tiny">最近 ' + ul.length + ' 次请求</span></div>' +
+      '<div class="tiny" style="margin-bottom:12px">客户端界面显示的「共消耗」来自上游返回的 <span class="mono">usage.credit</span>，' +
+      '按<b>输入未命中缓存的 token</b>与<b>输出 token（含思考）</b>计费；命中缓存的输入几乎不计费。' +
+      '今天累计消耗 <b>' + todayCredits.toFixed(2) + '</b> 积分 / ' + num(todayTokens) + ' tokens。</div>';
+
+    if (!ul.length) {
+      html += '<div class="tiny">暂无请求记录。</div>';
+    } else {
+      html += '<div style="overflow-x:auto"><table class="tbl">' +
+        '<thead><tr>' +
+        '<th>时间</th><th>模型</th>' +
+        '<th>输入</th><th>缓存命中</th>' +
+        '<th>输出</th><th>思考</th>' +
+        '<th>积分</th></tr></thead><tbody>';
+      for (var i = 0; i < ul.length && i < 30; i++) {
+        var u = ul[i];
+        var t = new Date(u.at);
+        html += '<tr>' +
+          '<td class="num">' + String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0') + ':' + String(t.getSeconds()).padStart(2,'0') + '</td>' +
+          '<td style="color:var(--tx2)">' + esc(u.model||'') + '</td>' +
+          '<td class="num">' + num(u.prompt||0) + '</td>' +
+          '<td class="num" style="color:' + (u.cacheHit ? 'var(--ok)' : 'var(--tx3)') + '">' + num(u.cacheHit||0) + '</td>' +
+          '<td class="num">' + num(u.completion||0) + '</td>' +
+          '<td class="num">' + num(u.reasoning||0) + '</td>' +
+          '<td class="num" style="color:#8fd8ff;font-weight:600">' + (Number(u.credit||0)).toFixed(3) + '</td>' +
+          '</tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    html += '</div>';
+    return html;
+  },
+  after: function(s){
+    el('topActions').innerHTML = '<button class="btn" data-act="testProxy">'+icon('play',14)+'测试连通</button>';
+    // 模型目录懒加载：进代理页才拉，避免每次刷新都打上游
+    if(!MODELV.data) loadModelInfo(false);
+  }
+};
+function opt(v, label, cur){ return '<option value="'+v+'"'+(cur===v?' selected':'')+'>'+esc(label)+'</option>'; }
+
+/* ---------- 小喵（Buddy 旅行） ---------- */
+function meowStateText(r){
+  if (r.dailyLimitToday && r.state !== 'arrived') return ['今日已旅行','warn'];
+  if (r.state === 'arrived') return ['可领取','ok'];
+  if (r.state === 'traveling') return ['旅行中','acc'];
+  return ['空闲',''];
+}
+function meowCountdown(r, serverTime){
+  if (r.state !== 'traveling' || !r.arriveAt) return '';
+  var now = Date.now() + (serverTime ? (serverTime - Date.now()) : 0);
+  var left = Math.max(0, r.arriveAt * 1000 - now);
+  if (!left) return '即将到达';
+  var mm = Math.floor(left/60000), ss = Math.floor((left%60000)/1000);
+  return '还剩 ' + mm + ' 分 ' + (ss<10?'0':'') + ss + ' 秒';
+}
+VIEWS.meow = {
+  render: function(s){
+    var m = s.settings.meow;
+    var mw = s.meow || { summary:{}, list:[], nextIn:null };
+    var sum = mw.summary || {};
+    var list = mw.list || [];
+
+    var html = '<div class="grid g4" style="margin-bottom:14px">' +
+      stat('今日已领取', String(sum.todayClaimed||0) + ' / ' + (sum.usable||0), '今日累计 ' + (sum.todayReward||0) + ' 积分', (sum.todayClaimed?'ok':''), 'check') +
+      stat('旅行中', String(sum.traveling||0), '到点自动领取', '', 'clock') +
+      stat('待领取', String(sum.arrived||0), '已到达，等你点一下', (sum.arrived?'ok':''), 'cat') +
+      stat('今日上限', String(sum.limitReached||0), '今天已经派过的账号数', (sum.limitReached?'warn':''), 'alert') +
+      '</div>';
+
+    /* 账号列表 */
+    var rows = list.length ? list.map(function(r){
+      var stt = meowStateText(r);
+      var sub = [];
+      if (r.locationName) sub.push('地点：' + r.locationName);
+      var cd = meowCountdown(r, s.serverTime);
+      if (cd) sub.push(cd);
+      if (r.lastClaimAt) sub.push('上次领取 ' + fromNow(r.lastClaimAt) + (r.lastReward?('（+' + r.lastReward + '）'):''));
+      if (r.note && !r.error && !(r.locationName && r.note.indexOf('已派出') === 0)) sub.push(r.note);
+      if (r.error) sub.push(r.error);
+      if (!r.hasCredential) sub.push('缺凭证，先去账号页补令牌或 Cookie');
+      var acts = '';
+      if (r.hasCredential){
+        if (r.state === 'arrived') acts += '<button class="btn primary sm" data-act="meowClaim" data-id="'+r.id+'">领取奖励</button>';
+        else if (r.state === 'traveling') acts += '<button class="btn sm" data-act="meowSync" data-id="'+r.id+'">刷新状态</button>';
+        else if (!r.dailyLimitToday) acts += '<button class="btn primary sm" data-act="meowDepart" data-id="'+r.id+'">派出旅行</button>';
+        acts += '<button class="btn sm" data-act="meowRun" data-id="'+r.id+'">托管一次</button>';
+      }
+      return '<div class="item">' +
+        '<div class="ico">' + icon('cat',15) + '</div>' +
+        '<div class="txt"><b>' + esc(r.nickname) + ' <span class="pill ' + (stt[1]==='ok'?'ok':stt[1]==='warn'?'warn':stt[1]==='acc'?'acc':'') + '">' + stt[0] + '</span></b>' +
+        '<span>' + esc(sub.join(' · ') || '空闲，随时可以出发') + '</span></div>' +
+        '<div class="acts">' + acts + '</div>' +
+        '</div>';
+    }).join('') : '<div class="empty"><b>还没有账号</b><span>先去「账号」页添加账号，才能派猫旅行</span></div>';
+
+    html += '<div class="card" style="margin-bottom:14px"><div class="card-h"><h3>旅行状态</h3><span class="grow"></span>' +
+      '<span class="tiny">' + (mw.nextIn === null ? '自动巡检未开启' : (mw.nextIn>0 ? ('下次巡检 ' + Math.ceil(mw.nextIn/60) + ' 分钟后') : '马上巡检')) + '</span>' +
+      '<button class="btn sm" data-act="meowRunAll">' + icon('play',13) + '全部托管一次</button></div>' +
+      rows + '</div>';
+
+    /* 巡检设置 */
+    html += '<div class="card"><div class="card-h"><h3>自动巡检</h3><span class="grow"></span>' +
+      '<span class="tiny">' + (m.enabled ? '已开启自动派出' : '未开启自动派出（只自动领、不自动派）') + '</span></div>' +
+      '<div class="rowline"><div class="t"><b>自动派出（每账号每天一次）</b><span>空闲时自动派猫出发；关闭时只自动领积分，出发需手动点</span></div>' +
+      '<button class="switch ' + (m.enabled?'on':'') + '" data-act="toggleMeow"></button></div>' +
+      '<div class="inline">' +
+      '<div class="field"><label>巡检间隔（分钟）</label><input type="number" id="mwInterval" min="10" max="1440" value="' + (m.intervalMinutes||60) + '"></div>' +
+      '<div class="field"><label>地点策略</label><select id="mwStrategy">' +
+        opt('shortest','最短时长（最快能领取）',m.strategy) +
+        opt('longest','最长时长（走得更远）',m.strategy) +
+        opt('rotate','轮换地点',m.strategy) +
+        opt('fixed','固定地点',m.strategy) +
+      '</select></div>' +
+      '<div class="field"><label>领取巡检间隔（分钟）</label><input type="number" id="mwClaimInterval" min="1" max="120" value="' + (m.claimIntervalMinutes||5) + '"></div>' +
+      '</div>' +
+      '<div class="field" style="margin-top:14px"><label>固定地点 id（策略选「固定地点」时生效）</label>' +
+      '<input type="text" id="mwFixed" placeholder="留空则按策略自动选" value="' + esc(m.fixedLocationId||'') + '"></div>' +
+      '<div class="rowline"><div class="t"><b>回来自动领积分</b><span>猫到点后自动领，不用手动点；与自动派出互相独立</span></div>' +
+      '<button class="switch ' + (m.autoClaim===false?'':'on') + '" data-act="toggleMeowAutoClaim"></button></div>' +
+      '<div class="rowline"><div class="t"><b>领取后自动刷新积分</b><span>领到积分顺手更新额度，页面数字不会滞后</span></div>' +
+      '<button class="switch ' + (m.autoCollect?'on':'') + '" data-act="toggleMeowCollect"></button></div>' +
+      '<div class="rowline"><div class="t"><b>触发上限后当日熔断</b><span>上游明确说「今天累啦」就当天不再发请求，避免风控</span></div>' +
+      '<button class="switch ' + (m.stopOnLimit?'on':'') + '" data-act="toggleMeowLimit"></button></div>' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:4px">' +
+      '<button class="btn primary" data-act="saveMeow">' + icon('check',13) + '保存</button>' +
+      '<button class="btn" data-act="meowPlaces">' + icon('list',13) + '查看可选地点</button></div>' +
+      '<div class="tiny" style="margin-top:12px;line-height:1.7">' +
+      '上游接口：状态 <code>/activity/growth/buddy/travel/status</code>，派出 <code>/travel/depart</code>，领取 <code>/travel/claim</code>。<br>' +
+      '自动巡检开着 = 到点自动领 + 空闲自动派出（每天一次）；只开「回来自动领积分」= 只领不派。<br>' +
+      '每天只能派一次，到点才会出现「领取奖励」。</div>' +
+      '</div>';
+    return html;
+  },
+  after: function(){
+    el('topActions').innerHTML = '<button class="btn" data-act="meowRunAll">' + icon('play',14) + '全部托管一次</button>';
+  }
+};
+
+/* ---------- 保活 / 错峰（设置页的运维卡片） ---------- */
+function kaStatusHtml(){
+  if (KA_CACHE.err) return '<div class="tiny" style="color:#ff9a99">' + esc(KA_CACHE.err) + '</div>';
+  var ka = KA_CACHE.data;
+  if (!ka) return '<div class="tiny">正在读取保活状态…</div>';
+  var out = '';
+  out += '<div class="tiny" style="margin-bottom:4px">上次续期：' +
+    (ka.lastRenewAt ? (esc(dt(ka.lastRenewAt)) + ' · ' + esc(ka.lastRenewResult || '—')) : '还没跑过') + '</div>';
+  out += '<div class="tiny">上次保活：' +
+    (ka.lastKeepAliveAt ? (esc(dt(ka.lastKeepAliveAt)) + ' · ' + esc(ka.lastKeepAliveResult || '—')) : '还没跑过') + '</div>';
+  if (ka.ready === false) out += '<div class="tiny" style="color:var(--warn);margin-top:4px">保活模块未就绪：' + esc(ka.error || '未知原因') + '</div>';
+  return out;
+}
+async function loadKeepaliveStatus(){
+  var box = el('kaStatusBox');
+  if (!box) return;
+  try{
+    var r = await api('/api/keepalive/status');
+    if (el('kaStatusBox') !== box) return;
+    KA_CACHE.data = r; KA_CACHE.err = '';
+    box.innerHTML = kaStatusHtml();
+  }catch(err){
+    if (el('kaStatusBox') !== box) return;
+    KA_CACHE.err = apiErrText(err, '保活');
+    box.innerHTML = kaStatusHtml();
+  }
+}
+function keepaliveCardHtml(){
+  var k = cfgKeepalive();
+  var sched = (S.state && S.state.scheduler) || {};
+  var nxt = nextInText(sched.keepaliveNextIn);
+  return '<div class="card"><div class="card-h"><h3>保活（令牌续期）</h3><span class="grow"></span>' +
+    '<span class="tiny">' + (k.enabled ? ('自动保活已开启' + (nxt ? (' · 下次 ' + nxt) : '')) : '自动保活未开启') + '</span></div>' +
+    '<div class="rowline"><div class="t"><b>自动续期</b><span>后台定时检查令牌剩余有效期，不足阈值就换新，避免闲置账号静默过期</span></div>' +
+    '<button class="switch ' + (k.enabled ? 'on' : '') + '" data-act="toggleKeepalive"></button></div>' +
+    '<div class="rowline"><div class="t"><b>活跃上报</b><span>当前无可用接口：上游没有活跃/心跳端点（实测全 404），开启后每轮只多一行「跳过」日志</span></div>' +
+    '<button class="switch ' + (k.activeReport ? 'on' : '') + '" data-act="toggleKeepaliveActive"></button></div>' +
+    '<div class="inline" style="margin-top:12px">' +
+    '<div class="field"><label>续期阈值（天）</label><input type="number" id="kaThreshold" min="1" max="30" value="' + (k.renewDaysThreshold || 3) + '">' +
+    '<div class="help">建议保持 3 天。调大会让每轮都判定「无需续期」，等于白跑；调小则更早换新票。</div></div>' +
+    '<div class="field"><label>巡检间隔（分钟）</label><input type="number" id="kaInterval" min="30" max="1440" value="' + (k.intervalMinutes || 720) + '"></div>' +
+    '</div>' +
+    '<div id="kaStatusBox" style="margin-top:12px">' + kaStatusHtml() + '</div>' +
+    '<div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap">' +
+    '<button class="btn primary" data-act="saveKeepalive">' + icon('check',13) + '保存</button>' +
+    '<button class="btn" data-act="keepaliveRun">' + icon('shield',13) + '立即保活</button></div>' +
+    '<div class="tiny" style="margin-top:10px;line-height:1.7">续期只换新令牌，不动积分；阈值 3 天 = 剩余有效期不足 3 天时换新。' +
+    '「立即保活」会立刻跑一轮续期（外加一次活跃上报尝试），结果同步写进运行日志。</div></div>';
+}
+function scheduleCardHtml(){
+  var sc = cfgSchedule();
+  var sched = (S.state && S.state.scheduler) || {};
+  var off = Number(sched.scheduleOffsetSeconds) || 0;
+  // 账号数决定有多少个间隔；总预算 180 秒按间隔数均分（lib/sched.js paceBudgetFor）
+  var accCount = ((S.state && S.state.accounts) || []).length;
+  var gaps = Math.max(0, accCount - 1);
+  var PACE_BUDGET = 180;
+  var perGap = gaps ? Math.max(1, Math.floor(PACE_BUDGET / gaps)) : 0;
+  var effMax = gaps ? Math.min(sc.accountDelayMaxSeconds || 0, perGap) : 0;
+  var effMin = gaps ? Math.min(sc.accountDelayMinSeconds || 0, effMax) : 0;
+  var capped = gaps > 0 && effMax < sc.accountDelayMaxSeconds;
+  return '<div class="card"><div class="card-h"><h3>账号错峰</h3><span class="grow"></span>' +
+    '<span class="tiny">' + (off ? ('今日签到已错峰 +' + Math.round(off / 60) + ' 分钟') : '降低多账号同刻批量特征') + '</span></div>' +
+    '<div class="inline">' +
+    '<div class="field"><label>随机延后（0-60 分钟）</label><input type="number" id="schRandom" min="0" max="60" value="' + (sc.randomDelayMinutes || 0) + '"></div>' +
+    '<div class="field"><label>账号间隔最小（秒）</label><input type="number" id="schMin" min="0" max="600" value="' + (sc.accountDelayMinSeconds || 0) + '"></div>' +
+    '<div class="field"><label>账号间隔最大（0-600 秒）</label><input type="number" id="schMax" min="0" max="600" value="' + (sc.accountDelayMaxSeconds || 0) + '"></div>' +
+    '</div>' +
+    '<div class="tiny" style="margin-top:10px;line-height:1.7">' +
+    '<b>随机延后</b>：每天任务在基准时间基础上再随机推迟 0-60 分钟，避免每天同一秒开跑。<br>' +
+    '<b>账号间隔</b>：同批里账号之间随机等「最小-最大」秒。<br>' +
+    (gaps
+      ? '当前 <b>' + accCount + '</b> 个账号 = <b>' + gaps + '</b> 个间隔，总等待预算 <b>180 秒</b>按间隔数均分，' +
+        '每个间隔最多 <b>' + perGap + ' 秒</b> → <b>实际生效区间 ' + effMin + '~' + effMax + ' 秒</b>。' +
+        (capped ? '<br><span style="color:var(--warn)">配的上限 ' + sc.accountDelayMaxSeconds + ' 秒超过每份预算 ' + perGap + ' 秒，实际按 ' + effMax + ' 秒执行。</span>' : '')
+      : '账号数不足 2 个，没有账号间隔。') +
+    '<br>三项都填 0 = 到点即跑（与改造前完全一致）；最小 > 最大时会自动对调。</div>' +
+    '<div style="margin-top:12px"><button class="btn primary" data-act="saveSchedule">' + icon('check',13) + '保存错峰设置</button></div></div>';
+}
+
+/* ---------- 设置 ---------- */
+VIEWS.settings = {
+  render: function(s){
+    var sec = s.settings.security;
+    var html = '<div class="grid g2">';
+
+    html += '<div class="card"><div class="card-h"><h3>基础</h3></div>' +
+      '<div class="field"><label>站点名称</label><input type="text" id="stTitle" value="'+esc(s.settings.siteTitle)+'"></div>' +
+      '<div class="field"><label>对外访问地址</label>' +
+      '<input type="text" id="stBase" placeholder="https://wb.example.com" value="'+esc(s.settings.publicBaseUrl||'')+'">' +
+      '<div class="help">用于在代理页生成正确的接入地址。反向代理到 HTTPS 后填这里。</div></div>' +
+      '<button class="btn primary" data-act="saveBasic">'+icon('check',13)+'保存</button></div>';
+
+    html += '<div class="card"><div class="card-h"><h3>安全</h3></div>' +
+      '<div class="field"><label>会话有效期（小时）</label><input type="number" id="stSession" min="1" max="720" value="'+(sec.sessionHours||72)+'"></div>' +
+      '<div class="field"><label>登录失败上限（次）</label><input type="number" id="stAttempts" min="3" max="50" value="'+(sec.loginMaxAttempts||8)+'"></div>' +
+      '<div class="rowline"><div class="t"><b>信任反向代理头</b><span>部署在 Nginx 后面时开启，用于正确识别客户端 IP</span></div>' +
+      '<button class="switch '+(sec.trustProxy?'on':'')+'" data-act="toggleTrust"></button></div>' +
+      '<button class="btn primary" style="margin-top:14px" data-act="saveSecurity">'+icon('check',13)+'保存</button>' +
+      '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button class="btn" data-act="changePw">'+icon('key',13)+'修改管理员口令</button>' +
+      '<button class="btn" data-act="logout">退出登录</button></div>' +
+      '</div>';
+
+    html += '<div class="card"><div class="card-h"><h3>数据</h3></div>' +
+      '<div class="tiny" style="margin-bottom:12px">账号令牌与设置以 AES-256-GCM 加密存放在 <span class="mono">data/db.enc</span>，主密钥在 <span class="mono">data/master.key</span>。备份时两个文件都要拿走。</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<a class="btn" href="/api/backup" download>'+icon('down',13)+'下载加密数据</a>' +
+      '<button class="btn" data-act="clearLogs">'+icon('trash',13)+'清空日志</button></div>' +
+      '<div class="help" style="margin-top:10px">换服务器时把 db.enc 和 master.key 一起拷到新机器同名目录即可无缝恢复。</div>' +
+      '</div>';
+
+    html += '<div class="card"><div class="card-h"><h3>浏览器扩展</h3></div>' +
+      '<div class="tiny" style="line-height:1.7;margin-bottom:12px">' +
+      '扩展在 workbuddy.cn 页面里读取登录态，用官方接口自校验后回传，不需要手动找令牌。' +
+      '使用方法：加载扩展 → 打开控制台点「配对码」→ 在扩展里填入配对码和本服务地址。</div>' +
+      '<button class="btn primary" data-act="pairing">'+icon('key',13)+'获取配对码</button>' +
+      '</div>';
+
+    html += '<div class="card"><div class="card-h"><h3>接口探测台</h3><span class="grow"></span>' +
+      '<span class="tiny">用真实账号令牌打任意路径</span></div>' +
+      '<div class="inline"><div class="field"><label>凭证来源</label><select id="pbAcc">' +
+      (s.accounts.length ? s.accounts.map(function(a){ return '<option value="'+esc(a.id)+'">'+esc(a.nickname)+'</option>'; }).join('')
+        : '<option value="">（无账号）</option>') + '</select></div>' +
+      '<div class="field" style="max-width:110px"><label>方法</label><select id="pbMethod">' +
+      '<option>POST</option><option>GET</option></select></div>' +
+      '<div class="field" style="flex:2"><label>路径</label><input type="text" id="pbPath" placeholder="/v2/billing/meter/checkin-activity-status"></div>' +
+      '</div>' +
+      '<div class="field" style="margin-top:12px"><label>请求体（JSON，可空）</label><textarea id="pbBody" placeholder="{}"></textarea></div>' +
+      '<button class="btn primary" data-act="doProbe">'+icon('play',13)+'发送</button>' +
+      '<div id="pbOut" style="margin-top:12px"></div></div>';
+
+    html += keepaliveCardHtml() + scheduleCardHtml();
+
+    html += '</div>';
+    return html;
+  },
+  after: function(){
+    el('topActions').innerHTML = '';
+    loadKeepaliveStatus();
+  }
+};
+
+/* 临时停用：两档语义，别让用户以为「停用 = 删号」 */
+function openPauseDrawer(id){
+  var a = (S.state.accounts || []).find(function(x){ return x.id === id; });
+  if (!a){ toast('账号不存在', 'bad'); return; }
+  var body =
+    '<div class="tiny" style="margin-bottom:14px;line-height:1.8">正在停用：<b style="color:var(--tx)">' + esc(a.nickname) + '</b><br>' +
+    '停用只是下线动作，凭证与积分都保留，随时可以一键恢复；删号才会丢凭证。<br>' +
+    '卡片上的开关走的就是这里：亮 = 转发在线，灭 = 已停用。</div>' +
+    '<div class="rowline"><div class="t"><b>仅停转发</b><span>代理转发与对话下线，签到、保活、小喵照常跑（推荐）</span></div>' +
+    '<button class="btn sm" data-act="pauseDo" data-id="' + esc(a.id) + '" data-mode="forward-only">停转发</button></div>' +
+    '<div class="rowline"><div class="t"><b>完全停用</b><span>连签到、保活等一切动作都停，只有手动操作才会碰它</span></div>' +
+    '<button class="btn sm danger" data-act="pauseDo" data-id="' + esc(a.id) + '" data-mode="all">完全停用</button></div>';
+  openDrawer('临时停用账号', body, '<button class="btn" data-close="1">取消</button>');
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', closeDrawer); });
+}
+
+/* ============ 操作分发 ============ */
+document.addEventListener('click', async function(e){
+  var btn = e.target.closest('[data-act]');
+  if (btn){
+    e.preventDefault();
+    await handleAct(btn.getAttribute('data-act'), btn, btn.getAttribute('data-id') || btn.getAttribute('data-tab'));
+    return;
+  }
+  var cp = e.target.closest('[data-copy]');
+  if (cp){ copyText(cp.getAttribute('data-copy')); }
+});
+document.addEventListener('change', async function(e){
+  var t = e.target;
+  if (t.id === 'pxStrategy' || t.id === 'pxSticky' || t.id === 'pxFailover') return;
+});
+
+async function handleAct(act, btn, id){
+  try{
+    if (act === 'add'){ openAccountDrawer(null); return; }
+    if (act === 'qrlogin' || act === 'smslogin'){ openSmsLogin(); return; }
+    if (act === 'relogin'){ reloginAccount(id, btn); return; }
+    if (act === 'edit'){ openAccountDrawer(id); return; }
+    if (act === 'refreshAll'){
+      btn.disabled = true; btn.innerHTML = '刷新中…';
+      var r = await api('/api/accounts/refresh-all', { body:{} });
+      var okc = r.results.filter(function(x){ return x.ok; }).length;
+      toast('已刷新 ' + okc + ' / ' + r.results.length + ' 个账号', okc===r.results.length?'ok':'warn');
+      await refresh(); return;
+    }
+    if (act === 'refresh'){
+      btn.disabled = true;
+      await api('/api/accounts/' + id + '/refresh', { body:{} });
+      toast('额度已更新', 'ok'); await refresh(); return;
+    }
+    if (act === 'del'){
+      var a2 = S.state.accounts.find(function(x){ return x.id === id; });
+      if (!confirm('确定删除账号「' + a2.nickname + '」？此操作不可撤销。')) return;
+      await api('/api/accounts/' + id + '/delete', { body:{} });
+      toast('已删除', 'ok'); await refresh(); return;
+    }
+    /* ---- 积分（实时 / 流水） ---- */
+    if (act === 'creditsRefreshOne'){
+      btn.disabled = true;
+      try{
+        var cr1 = await api('/api/credits/refresh', { body:{ id:id }, timeout: 90000 });
+        if (!cr1){
+          toast('刷新完成，但服务端没返回余额', 'warn');
+        } else if (cr1.ok === false){
+          toast('刷新失败：' + (cr1.error || '未知错误'), 'bad');
+        } else {
+          // 首次刷新（没有上一次余额可比）delta 为 null，此时只报积分值，别拼成「+null」
+          var dRaw = cr1.delta;
+          var hasDelta = dRaw !== null && dRaw !== undefined && isFinite(Number(dRaw)) && Number(dRaw) !== 0;
+          toast('实时积分 ' + fmtCredit(cr1.credits) +
+            (hasDelta ? ('（' + (Number(dRaw) > 0 ? '+' : '') + fmtCredit(dRaw) + '）') : ''), 'ok');
+        }
+      }catch(err){
+        toast(apiErrText(err, '积分'), err && err.status === 503 ? 'warn' : 'bad');
+      }
+      btn.disabled = false;
+      await refresh();
+      return;
+    }
+    if (act === 'creditsRefresh'){
+      var oldTxt = btn.innerHTML;
+      btn.disabled = true; btn.innerHTML = '刷新中…';
+      // 全量是「账号数 × 2」次上游请求（summary + paid-packages，中间 300~800ms 错峰），
+      // 30 个账号约 20~30 秒，所以先明确告知，别让用户以为卡死。
+      toast('正在逐个查询上游实时积分' + ((S.state.accounts || []).length > 5 ? '，账号较多约需 20~30 秒' : '') + '…');
+      try{
+        var crAll = await api('/api/credits/refresh', { body:{}, timeout: 300000 });
+        var rs = (crAll && crAll.results) || [];
+        var okN = rs.filter(function(x){ return x && x.ok; }).length;
+        toast(rs.length ? ('已刷新 ' + okN + ' / ' + rs.length + ' 个账号的实时积分') : '没有可刷新的账号',
+          (rs.length && okN === rs.length) ? 'ok' : 'warn');
+      }catch(err){
+        toast(apiErrText(err, '积分'), err && err.status === 503 ? 'warn' : 'bad');
+      }
+      btn.disabled = false; btn.innerHTML = oldTxt;
+      await refresh();
+      return;
+    }
+    if (act === 'ledgerRefresh'){
+      btn.disabled = true;
+      await loadLedger();
+      btn.disabled = false;
+      toast('流水已刷新', 'ok');
+      return;
+    }
+    /* ---- 保活 ---- */
+    if (act === 'toggleKeepalive'){
+      var k0 = cfgKeepalive();
+      var kOn = !k0.enabled;
+      var okK = await saveSection('keepalive', {
+        enabled: kOn,
+        activeReport: k0.activeReport,
+        renewDaysThreshold: clampNum(el('kaThreshold'), 1, 30, k0.renewDaysThreshold || 3),
+        intervalMinutes: clampNum(el('kaInterval'), 30, 1440, k0.intervalMinutes || 720)
+      });
+      if (okK) toast(kOn ? '自动保活已开启' : '自动保活已关闭', 'ok');
+      await refresh(); return;
+    }
+    if (act === 'toggleKeepaliveActive'){
+      var k1 = cfgKeepalive();
+      var aOn = !k1.activeReport;
+      var okA = await saveSection('keepalive', {
+        enabled: k1.enabled,
+        activeReport: aOn,
+        renewDaysThreshold: clampNum(el('kaThreshold'), 1, 30, k1.renewDaysThreshold || 3),
+        intervalMinutes: clampNum(el('kaInterval'), 30, 1440, k1.intervalMinutes || 720)
+      });
+      if (okA) toast(aOn ? '已开启活跃上报（上游暂无该接口，仅记录尝试）' : '已关闭活跃上报', 'ok');
+      await refresh(); return;
+    }
+    if (act === 'saveKeepalive'){
+      var k2 = cfgKeepalive();
+      var okS = await saveSection('keepalive', {
+        enabled: k2.enabled,
+        activeReport: k2.activeReport,
+        renewDaysThreshold: clampNum(el('kaThreshold'), 1, 30, 3),
+        intervalMinutes: clampNum(el('kaInterval'), 30, 1440, 720)
+      });
+      if (okS) toast('保活设置已保存', 'ok');
+      await refresh(); return;
+    }
+    if (act === 'keepaliveRun'){
+      btn.disabled = true; btn.innerHTML = '保活中…';
+      try{
+        var kr = await api('/api/keepalive/run', { body:{}, timeout: 240000 });
+        if (kr && kr.ok === false) toast('保活未执行：' + (kr.reason || '未知原因'), 'warn');
+        else toast('保活完成：' + (kr.result || '已执行'), 'ok');
+      }catch(err){
+        toast(apiErrText(err, '保活'), err && err.status === 503 ? 'warn' : 'bad');
+      }
+      btn.disabled = false; btn.innerHTML = icon('shield',13) + '立即保活';
+      await loadKeepaliveStatus();
+      await refresh();
+      return;
+    }
+    /* ---- 错峰 ---- */
+    if (act === 'saveSchedule'){
+      var rd = clampNum(el('schRandom'), 0, 60, 0);
+      var mn = clampNum(el('schMin'), 0, 600, 0);
+      var mx = clampNum(el('schMax'), 0, 600, 0);
+      // 后端对 min>max 会自动对调，前端也照做并说明，避免用户以为填反了没生效
+      var swapped = false;
+      if (mx < mn){ var tmpMin = mn; mn = mx; mx = tmpMin; swapped = true; }
+      var okSch = await saveSection('schedule', {
+        randomDelayMinutes: rd,
+        accountDelayMinSeconds: mn,
+        accountDelayMaxSeconds: mx
+      });
+      if (okSch){
+        if (!rd && !mn && !mx) toast('已关闭错峰（到点即跑）', 'ok');
+        else if (swapped) toast('已保存：最小/最大填反了，已自动对调为 ' + mn + '-' + mx + ' 秒', 'warn');
+        else toast(mx > 180 ? ('错峰已保存（单次调度等待合计上限 180 秒）') : '错峰设置已保存', 'ok');
+      }
+      await refresh(); return;
+    }
+    /* ---- 临时停用 / 恢复 ---- */
+    if (act === 'pauseAccount'){ openPauseDrawer(id); return; }
+    if (act === 'pauseDo'){
+      var mode = btn.getAttribute('data-mode') === 'all' ? 'all' : 'forward-only';
+      btn.disabled = true;
+      try{
+        await api('/api/accounts/' + id + '/pause', { body:{ mode: mode } });
+        closeDrawer();
+        toast(mode === 'all' ? '已完全停用（连签到也停）' : '已停转发（签到 / 保活照常）', 'ok');
+      }catch(err){
+        toast(err.message || '停用失败', 'bad');
+        btn.disabled = false;
+        return;
+      }
+      await refresh(); return;
+    }
+    if (act === 'resumeAccount'){
+      btn.disabled = true;
+      try{
+        await api('/api/accounts/' + id + '/resume', { body:{} });
+        toast('已恢复启用', 'ok');
+      }catch(err){
+        toast(err.message || '恢复失败', 'bad');
+        btn.disabled = false;
+        return;
+      }
+      await refresh(); return;
+    }
+    if (act === 'signone'){
+      btn.disabled = true; btn.innerHTML = '签到中…';
+      var r1 = await api('/api/checkin/one', { body:{ id:id } });
+      toast(r1.skipped ? ('跳过：' + r1.reason) : ('签到成功 +' + (r1.credit||0) + ' 积分'), r1.skipped?'warn':'ok');
+      await refresh(); return;
+    }
+    if (act === 'signAll'){
+      btn.disabled = true; btn.innerHTML = '签到中…';
+      var r2 = await api('/api/checkin/all', { body:{} });
+      var ok2 = r2.results.filter(function(x){ return x.ok && !x.skipped; }).length;
+      var skip = r2.results.filter(function(x){ return x.ok && x.skipped; }).length;
+      toast('签到完成：成功 ' + ok2 + '，跳过 ' + skip + '，失败 ' + (r2.results.length-ok2-skip), 'ok');
+      await refresh(); return;
+    }
+    if (act === 'toggleProxy'){
+      var on = !S.state.settings.proxy.enabled;
+      await api('/api/settings', { body:{ proxy:{ enabled:on } } });
+      toast(on?'反向代理已开启':'反向代理已关闭', 'ok'); await refresh(); return;
+    }
+    if (act === 'toggleAnon'){
+      await api('/api/settings', { body:{ proxy:{ allowAnonymous: !S.state.settings.proxy.allowAnonymous } } });
+      await refresh(); return;
+    }
+    if (act === 'toggleCacheFriendly'){
+      var cf = S.state.settings.proxy.cacheFriendly === false;
+      await api('/api/settings', { body:{ proxy:{ cacheFriendly: cf } } });
+      toast(cf?'已开启缓存友好化（输入侧积分可降 90%）':'已关闭缓存友好化', 'ok');
+      await refresh(); return;
+    }
+    /* ---- 模型管理 ---- */
+    if (act === 'toggleAutoSelect'){
+      var asOn = !S.state.settings.proxy.autoSelectModel;
+      await api('/api/settings', { body:{ proxy:{ autoSelectModel: asOn } } });
+      toast(asOn ? '已开启按时段自动选模型' : '已关闭自动选模型', 'ok');
+      await refresh(); await loadModelInfo(false); return;
+    }
+    if (act === 'reloadModels'){
+      toast('正在从上游拉取最新倍率…');
+      await loadModelInfo(true);
+      toast('模型倍率已刷新', 'ok');
+      return;
+    }
+    if (act === 'modelSyncRun'){
+      var btnEl = e.target.closest('button');
+      if(btnEl){ btnEl.disabled = true; btnEl.textContent = '同步中…'; }
+      try{
+        var sr = await api('/api/models/sync/run', { body:{} });
+        if(sr && sr.ok){
+          var rs = (sr.result) || {};
+          toast('同步完成：新增 ' + (rs.added||0) + ' / 下架 ' + (rs.removed||0) + ' / 倍率变动 ' + (rs.rateChanged||0), 'ok');
+        } else {
+          toast('同步失败：' + ((sr && sr.error) || '未知原因'), 'bad');
+        }
+        await loadModelSync();
+        await loadModelInfo(true);
+      }catch(err){
+        toast('同步失败：' + err.message, 'bad');
+      }finally{
+        if(btnEl){ btnEl.disabled = false; btnEl.textContent = '立即同步'; }
+      }
+      return;
+    }
+
+    if (act === 'modelSelAll' || act === 'modelSelNone' || act === 'modelSelFree'){
+      var boxes = document.querySelectorAll('.mwl');
+      var want = act === 'modelSelAll' ? 'all' : (act === 'modelSelNone' ? 'none' : 'free');
+      var freeIds = {};
+      if(MODELV.data && MODELV.data.models){
+        for(var mi = 0; mi < MODELV.data.models.length; mi++){
+          if(MODELV.data.models[mi].rate === 0) freeIds[MODELV.data.models[mi].id] = 1;
+        }
+      }
+      for(var bi = 0; bi < boxes.length; bi++){
+        var v = boxes[bi].value;
+        boxes[bi].checked = want === 'all' ? true : (want === 'none' ? false : !!freeIds[v]);
+      }
+      toast(want === 'all' ? '已全选（记得点保存）' : (want === 'none' ? '已全不选（记得点保存）' : '已只留免费模型（记得点保存）'));
+      return;
+    }
+    if (act === 'saveModelWhitelist'){
+      var sel = [];
+      var bs = document.querySelectorAll('.mwl');
+      for(var si = 0; si < bs.length; si++) if(bs[si].checked) sel.push(bs[si].value);
+      await api('/api/settings', { body:{ proxy:{ modelWhitelist: sel } } });
+      toast('已保存，保留 '+sel.length+' 个模型', 'ok');
+      await refresh(); await loadModelInfo(false); return;
+    }
+    if (act === 'addModelMap'){
+      // 新增一行空的「自定义名 → 目标模型」，用目录里第一个模型预填目标
+      var wrap = document.getElementById('mmWrap');
+      if(!wrap) return;
+      var first = (MODELV.data && MODELV.data.models && MODELV.data.models[0]) ? MODELV.data.models[0].id : '';
+      var row = document.createElement('div');
+      row.className = 'rowline';
+      row.style.cssText = 'margin:0;padding:4px 0';
+      row.innerHTML = '<input class="mm-alias" value="" placeholder="自定义名" ' +
+        'style="flex:none;width:150px;margin-right:8px;font-family:var(--font-mono);font-size:12px">' +
+        '<span style="flex:none;opacity:.5;margin-right:8px">→</span>' +
+        '<select class="mm-target" style="flex:1;min-width:0">' +
+        mmTargetOptions(MODELV.data ? MODELV.data.models : [], first) + '</select>' +
+        '<button class="btn sm ghost" data-act="delModelMap" style="flex:none;margin-left:8px">删除</button>';
+      wrap.appendChild(row);
+      var inp = row.querySelector('.mm-alias');
+      if(inp) inp.focus();
+      return;
+    }
+    if (act === 'delModelMap'){
+      var row = btn && btn.closest ? btn.closest('.rowline') : null;
+      if(row && row.parentNode) row.parentNode.removeChild(row);
+      toast('已删除（记得点「保存自定义名」生效）');
+      return;
+    }
+    if (act === 'saveModelMap'){
+      var map = {};
+      var rows = document.querySelectorAll('.mm-alias');
+      for(var ri = 0; ri < rows.length; ri++){
+        var aliasName = String(rows[ri].value || '').trim();
+        if(!aliasName) continue;
+        var tgt = rows[ri].parentNode.querySelector('.mm-target');
+        var tv = tgt ? String(tgt.value || '').trim() : '';
+        if(!tv) continue;
+        map[aliasName] = tv;
+      }
+      await api('/api/settings', { body:{ proxy:{ modelMap: map } } });
+      toast('已保存 '+Object.keys(map).length+' 个自定义名', 'ok');
+      await refresh(); await loadModelInfo(false); return;
+    }
+    if (act === 'toggleAuto'){
+      var autoOn = !S.state.settings.checkin.autoEnabled;
+      // 拨开关时一并保存用户已填的「时间/重试/刷新额度」。
+      // 否则只提交 autoEnabled 会触发重渲染，把未保存的输入覆盖回服务端旧值（如 08:30）。
+      var ckBody = { autoEnabled: autoOn };
+      if (el('ckTime')) ckBody.time = el('ckTime').value || '08:30';
+      if (el('ckRetry')) ckBody.retry = Number(el('ckRetry').value)||0;
+      if (el('ckRefresh')) ckBody.refreshQuotaAfter = el('ckRefresh').checked;
+      await api('/api/settings', { body:{ checkin: ckBody } });
+      toast(autoOn ? ('自动签到已开启，每日 ' + (ckBody.time||'08:30')) : '自动签到已关闭', 'ok');
+      await refresh(); return;
+    }
+    if (act === 'toggleMeow'){
+      var mwOn = !S.state.settings.meow.enabled;
+      // 拨开关时一并保存已填的间隔/策略/固定地点，避免重渲染把未保存输入覆盖回旧值
+      var mwBody = { enabled: mwOn };
+      if (el('mwInterval')) mwBody.intervalMinutes = Number(el('mwInterval').value)||60;
+      if (el('mwClaimInterval')) mwBody.claimIntervalMinutes = Number(el('mwClaimInterval').value)||5;
+      if (el('mwStrategy')) mwBody.strategy = el('mwStrategy').value;
+      if (el('mwFixed')) mwBody.fixedLocationId = (el('mwFixed').value||'').trim();
+      await api('/api/settings', { body:{ meow: mwBody } });
+      toast(mwOn ? '已开启自动派出（每账号每天一次）' : '已关闭自动派出（仅自动领取）', 'ok');
+      await refresh(); return;
+    }
+    if (act === 'toggleMeowLimit'){
+      await api('/api/settings', { body:{ meow:{ stopOnLimit: !S.state.settings.meow.stopOnLimit } } });
+      await refresh(); return;
+    }
+    if (act === 'toggleTrust'){
+      await api('/api/settings', { body:{ security:{ trustProxy: !S.state.settings.security.trustProxy } } });
+      await refresh(); return;
+    }
+    if (act === 'saveProxy'){
+      await api('/api/settings', { body:{ proxy:{
+        strategy: el('pxStrategy').value,
+        stickyTtlMin: Number(el('pxSticky').value)||0,
+        maxFailover: Number(el('pxFailover').value)||0
+      } } });
+      toast('策略已保存', 'ok'); await refresh(); return;
+    }
+    if (act === 'saveCheckin'){
+      await api('/api/settings', { body:{ checkin:{
+        time: el('ckTime').value || '08:30',
+        retry: Number(el('ckRetry').value)||0,
+        refreshQuotaAfter: el('ckRefresh').checked
+      } } });
+      toast('自动签到设置已保存', 'ok'); await refresh(); return;
+    }
+    if (act === 'saveMeow'){
+      await api('/api/settings', { body:{ meow:{
+        intervalMinutes: Number(el('mwInterval').value)||60,
+        claimIntervalMinutes: Number(el('mwClaimInterval').value)||5,
+        strategy: el('mwStrategy').value,
+        fixedLocationId: (el('mwFixed') ? el('mwFixed').value.trim() : '')
+      } } });
+      toast('小喵设置已保存', 'ok'); await refresh(); return;
+    }
+    if (act === 'toggleMeowAutoClaim'){
+      var curClaim = S.state.settings.meow;
+      await api('/api/settings', { body:{ meow:{ autoClaim: !(curClaim && curClaim.autoClaim !== false) } } });
+      await refresh(); return;
+    }
+    if (act === 'toggleMeowCollect'){
+      await api('/api/settings', { body:{ meow:{ autoCollect: !S.state.settings.meow.autoCollect } } });
+      await refresh(); return;
+    }
+    if (act === 'meowSync'){
+      btn.disabled = true;
+      var sy = await api('/api/meow/sync', { body:{ id:id } });
+      toast(sy.ok ? ('状态已刷新：' + sy.travel.state) : ('刷新失败：' + sy.error), sy.ok?'ok':'bad');
+      await refresh(); return;
+    }
+    if (act === 'meowDepart'){
+      btn.disabled = true;
+      try{
+        var dp = await api('/api/meow/depart', { body:{ id:id } });
+        if (dp.ok) toast('已派出：' + (dp.travel.locationName || dp.locationId), 'ok');
+        else toast('派出失败：' + dp.error, 'bad');
+      }catch(err){ toast(err.message, 'bad'); }
+      await refresh(); return;
+    }
+    if (act === 'meowClaim'){
+      btn.disabled = true;
+      try{
+        var cl = await api('/api/meow/claim', { body:{ id:id } });
+        toast(cl.ok ? ('领取成功，获得 ' + (cl.rewardCredit||0) + ' 积分') : ('领取失败：' + cl.error), cl.ok?'ok':'bad');
+      }catch(err){ toast(err.message, 'bad'); }
+      await refresh(); return;
+    }
+    if (act === 'meowRun'){
+      btn.disabled = true;
+      try{
+        var rn = await api('/api/meow/run', { body:{ id:id } });
+        var map = { departed:'已派出', claimed:'已领取 ' + (rn.rewardCredit||0) + ' 积分', waiting:'旅行中，继续等', 'idle-only':'空闲（未开启自动派出）', 'skip-limit':'今日已达上限', 'claim-failed':'领取失败', 'depart-failed':'派出失败', error:'出错了' };
+        toast((map[rn.action] || rn.action) + (rn.error ? ('：' + rn.error) : ''), rn.ok?'ok':'bad');
+      }catch(err){ toast(err.message, 'bad'); }
+      await refresh(); return;
+    }
+    if (act === 'meowRunAll'){
+      btn.disabled = true;
+      var okN = 0, badN = 0;
+      toast('正在逐个处理账号，请稍候…', 'ok');
+      try{
+        var all = await api('/api/meow/run-all', { body:{} });
+        (all.results||[]).forEach(function(r){ if (r.ok) okN++; else badN++; });
+        toast('托管完成：成功 ' + okN + '，失败 ' + badN, badN?'bad':'ok');
+      }catch(err){ toast(err.message, 'bad'); }
+      await refresh(); return;
+    }
+    if (act === 'meowPlaces'){
+      var pool = (S.state.meow && S.state.meow.list || []).filter(function(x){ return x.hasCredential; });
+      if (!pool.length){ toast('先添加一个带凭证的账号', 'bad'); return; }
+      openDrawer('可选地点', '<div class="tiny">加载中…</div>', '');
+      var cfg = await api('/api/meow/config/' + pool[0].id);
+      if (!cfg.ok){
+        el('drawerBody').innerHTML = '<div class="tiny" style="color:#ff9a99">' + esc(cfg.error || '读取失败') + '</div>';
+        return;
+      }
+      if (!cfg.locations.length){
+        el('drawerBody').innerHTML = '<div class="tiny">成长中心没有返回可选地点，活动可能未开启。</div>';
+        return;
+      }
+      el('drawerBody').innerHTML = '<div class="tiny" style="margin-bottom:10px">来自 ' + esc(pool[0].nickname) + '，共 ' + cfg.locations.length + ' 个地点。把 id 填到「固定地点」里即可。</div>' +
+        cfg.locations.map(function(l){
+          return '<div class="item"><div class="ico">' + icon('cat',14) + '</div><div class="txt"><b>' + esc(l.name || '(未命名)') + '</b>' +
+            '<span>id: ' + esc(l.id) + (l.durationMin ? (' · 时长 ' + l.durationMin + ' 分钟') : '') + (l.rewardCredit ? (' · 奖励 ' + l.rewardCredit) : '') + '</span></div>' +
+            '<div class="acts"><button class="btn sm" data-act="meowCopyId" data-v="' + esc(l.id) + '">复制 id</button></div></div>';
+        }).join('');
+      return;
+    }
+    if (act === 'meowCopyId'){
+      copyText(btn.getAttribute('data-v'));
+      return;
+    }
+    if (act === 'saveBasic'){
+      await api('/api/settings', { body:{ siteTitle: el('stTitle').value || 'WorkBuddy 账号工作台', publicBaseUrl: el('stBase').value.trim() } });
+      toast('已保存', 'ok'); await refresh(); return;
+    }
+    if (act === 'saveSecurity'){
+      await api('/api/settings', { body:{ security:{
+        sessionHours: Number(el('stSession').value)||72,
+        loginMaxAttempts: Number(el('stAttempts').value)||8
+      } } });
+      toast('安全设置已保存', 'ok'); await refresh(); return;
+    }
+    if (act === 'rotateKey'){
+      if (!confirm('重置后旧密钥立即失效，已配置的客户端需要改成新密钥。继续？')) return;
+      var rk = await api('/api/proxy/rotate', { body:{} });
+      toast('新密钥已生成', 'ok'); await refresh(); return;
+    }
+    if (act === 'testProxy'){
+      var p = S.state.settings.proxy;
+      btn.disabled = true;
+      try{
+        var res = await fetch('/v1/models', { headers:{ authorization:'Bearer ' + p.accessKey } });
+        var j = await res.json();
+        toast(res.ok ? ('连通正常，返回 ' + (j.data?j.data.length:0) + ' 个模型') : ('失败：' + (j.error&&j.error.message)), res.ok?'ok':'bad');
+      }catch(err){ toast('连通失败：' + err.message, 'bad'); }
+      finally{ btn.disabled = false; }
+      return;
+    }
+    if (act === 'pairing'){
+      var pr = await api('/api/pairing', { body:{} });
+      openPairingDrawer(pr);
+      return;
+    }
+    if (act === 'changePw'){
+      openPasswordDrawer();
+      return;
+    }
+    if (act === 'logout'){
+      try{ await api('/api/logout', { body:{} }); }catch(err){}
+      S.authed = false; S.state = null; showGate(); return;
+    }
+    if (act === 'clearLogs'){
+      await api('/api/logs/clear', { body:{} });
+      toast('日志已清空', 'ok');
+      await refresh();
+      if (S.view === 'logs') await loadLogs();
+      return;
+    }
+    if (act === 'logRefresh'){
+      btn.disabled = true;
+      await loadLogs();
+      btn.disabled = false;
+      toast('日志已刷新', 'ok');
+      return;
+    }
+    if (act === 'logAuto'){
+      LOGV.auto = !LOGV.auto;
+      btn.classList.toggle('on', LOGV.auto);
+      logAutoRefresh(LOGV.auto);
+      toast(LOGV.auto ? '已开启自动刷新（5 秒）' : '已关闭自动刷新', 'ok');
+      return;
+    }
+    if (act === 'doProbe'){
+      var out = el('pbOut');
+      out.innerHTML = '<div class="tiny">请求中…</div>';
+      var body = null;
+      var raw = el('pbBody').value.trim();
+      if (raw){ try{ body = JSON.parse(raw); }catch(err){ out.innerHTML = '<div class="tiny" style="color:#ff9a99">请求体不是合法 JSON</div>'; return; } }
+      var pr2 = await api('/api/probe', { body:{
+        id: el('pbAcc').value, method: el('pbMethod').value, path: el('pbPath').value.trim(), body: body
+      } });
+      out.innerHTML = '<div class="code" style="max-height:300px">' + esc(JSON.stringify(pr2, null, 2)) + '</div>';
+      return;
+    }
+    if (act === 'probeOpen'){ setView('settings'); setTimeout(function(){ var p = el('pbPath'); if (p) p.focus(); }, 120); return; }
+    if (act === 'tab'){
+      var snips = {
+        py: 'from openai import OpenAI\n\nclient = OpenAI(\n    base_url="' + S.state.proxyBaseUrl + '",\n    api_key="' + S.state.settings.proxy.accessKey + '"\n)\n\nresp = client.chat.completions.create(\n    model="default",\n    messages=[{"role":"user","content":"你好"}]\n)\nprint(resp.choices[0].message.content)',
+        curl: 'curl ' + S.state.proxyBaseUrl + '/chat/completions \\\n  -H "Authorization: Bearer ' + S.state.settings.proxy.accessKey + '" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model":"default","stream":true,"messages":[{"role":"user","content":"你好"}]}\'',
+        env: '# 环境变量方式\nexport OPENAI_BASE_URL="' + S.state.proxyBaseUrl + '"\nexport OPENAI_API_KEY="' + S.state.settings.proxy.accessKey + '"',
+        wb: '# WorkBuddy 桌面端「设置 → 模型 → 自定义模型」\n提供商：自定义 / Custom\n接口地址：' + S.state.proxyBaseUrl + '/chat/completions\nAPI Key：' + S.state.settings.proxy.accessKey + '\n模型名称：deepseek-v4-pro  （或 glm-5.3 / kimi-k3-2 等，填 /v1/models 里的 id）\n高级工具：勾选「工具调用」'
+      };
+      el('snip').innerHTML = '<button class="btn sm copy" data-copy="' + esc(snips[id]) + '">复制</button>' + esc(snips[id]);
+      return;
+    }
+  }catch(err){
+    toast(err.message || '操作失败', 'bad');
+    if (btn){ btn.disabled = false; }
+  }
+}
+
+/* ============ 抽屉 ============ */
+function openDrawer(title, bodyHtml, footHtml){
+  el('drawerTitle').textContent = title;
+  el('drawerBody').innerHTML = bodyHtml;
+  el('drawerFoot').innerHTML = footHtml || '';
+  el('mask').classList.add('on');
+  el('drawer').classList.add('on');
+}
+function closeDrawer(){
+  el('mask').classList.remove('on');
+  el('drawer').classList.remove('on');
+}
+el('mask').addEventListener('click', closeDrawer);
+el('drawerClose').addEventListener('click', closeDrawer);
+
+function openAccountDrawer(id){
+  var a = id ? S.state.accounts.find(function(x){ return x.id === id; }) : null;
+  var body =
+    '<div class="field"><label>备注名</label><input type="text" id="fNick" placeholder="例如：主号" value="'+esc(a?a.nickname:'')+'"></div>' +
+    '<div class="field"><label>UID</label><input type="text" id="fUid" placeholder="账号的 uid（UUID 形式）" value="'+esc(a?a.uid:'')+'">' +
+    '<div class="help">在 workbuddy.cn 登录后，浏览器 F12 → Application → Local Storage 里能看到；扩展会自动带上。</div></div>' +
+    '<div class="field"><label>访问令牌</label><textarea id="fToken" placeholder="accessToken（Bearer 后面那一串）">'+esc(a?'':'' )+'</textarea>' +
+    '<div class="help">'+(a?('当前令牌尾部 '+esc(a.tokenTail)+'，留空表示不修改。'):'令牌和 Cookie 至少填一个。')+'</div></div>' +
+    '<div class="field"><label>Cookie（可选，网页版登录态）</label><textarea id="fCookie" placeholder="在 workbuddy.cn 按 F12 → Network → 任意请求 → 复制请求头里的 cookie 整段粘贴到这里"></textarea>' +
+    '<div class="help">'+(a&&a.hasCookie?('当前已存 '+a.cookieCount+' 个 Cookie。'):'')+'带 Cookie 时请求与网页版完全一致，成长中心那类接口更稳；扩展可以自动抓，不用手抄。</div></div>' +
+    '<div class="field"><label>标签（逗号分隔）</label><input type="text" id="fTags" placeholder="工作,备用" value="'+esc(a?(a.tags||[]).join(','):'')+'"></div>' +
+    '<div class="field"><label>备注</label><input type="text" id="fNote" value="'+esc(a?a.note:'')+'"></div>';
+  var foot = '<button class="btn" data-close="1">取消</button><button class="btn primary" id="fSave">'+(a?'保存':'创建并校验')+'</button>';
+  openDrawer(a?'编辑账号':'新增账号', body, foot);
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', closeDrawer); });
+  el('fSave').addEventListener('click', async function(){
+    var payload = {
+      nickname: el('fNick').value.trim(),
+      uid: el('fUid').value.trim(),
+      tags: el('fTags').value.split(/[,，]/).map(function(s){ return s.trim(); }).filter(Boolean),
+      note: el('fNote').value.trim()
+    };
+    var tk = el('fToken').value.trim();
+    if (tk) payload.token = tk;
+    var ck = el('fCookie').value.trim();
+    if (ck) payload.cookie = ck;
+    if (a) payload.id = a.id;
+    var b = el('fSave'); b.disabled = true; b.textContent = '校验中…';
+    try{
+      var r = await api('/api/accounts', { body: payload });
+      closeDrawer();
+      toast(r.verified === false ? ('已保存，但校验未通过：' + (r.note||'')) : '账号已保存', r.verified === false ? 'warn':'ok');
+      await refresh();
+    }catch(err){
+      toast(err.message, 'bad');
+      b.disabled = false; b.textContent = a?'保存':'创建并校验';
+    }
+  });
+}
+
+/* ===== 手机号 + 短信验证码登录（纯服务端，无浏览器、无手工 Cookie） ===== */
+var smsCtl = { id:'', phone:'', left:0, timer:null };
+
+/* 自动注册（新手机号建号）会话状态 */
+var regCtl = { id:'', phone:'' };
+
+function regMsg(text, cls){
+  var n = el('regMsg');
+  if (!n) return;
+  n.textContent = text || '';
+  n.style.color = cls === 'bad' ? 'var(--bad)' : cls === 'ok' ? 'var(--ok)' : cls === 'warn' ? 'var(--warn)' : 'var(--tx2)';
+}
+
+/* 注册进度步骤条：idx 0=发码 1=校验建号 2=换会话凭证 3=绑定并激活 */
+function paintRegSteps(idx, note){
+  var box = el('regSteps'); if (!box) return;
+  var steps = ['发注册验证码','校验并建号','换取会话凭证','绑定并激活'];
+  var html = '';
+  for (var i=0;i<steps.length;i++){
+    var bg = i < idx ? 'var(--ok)' : (i === idx ? 'var(--accent)' : '#3a3f4b');
+    var col = (i <= idx) ? '#fff' : '#9aa3b2';
+    html += '<span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;font-size:12px;background:'+bg+';color:'+col+';margin:0 2px">'+
+            '<b style="display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;background:rgba(255,255,255,.25)">'+(i+1)+'</b>'+steps[i]+'</span>';
+    if (i < steps.length-1) html += '<span style="color:var(--muted);margin:0 1px">→</span>';
+  }
+  box.innerHTML = html;
+  var n = el('regStepNote'); if (n) n.textContent = note || '';
+}
+function regStepFromStatus(st){
+  if (!st || !st.step) return 1;
+  var m = { verifying:1, creating:1, selecting:1, capturing:2, login_code:2, done:3 };
+  var idx = (m[st.step] !== undefined) ? m[st.step] : 1;
+  var note = '';
+  if (idx === 2){
+    note = '「换取会话凭证」由腾讯 OneID 完成，通常 30–80 秒，请耐心等待，不要重复点击。';
+    if (st.step === 'login_code') note += ' 当前已超时，正在改走一次登录验证码（再填一次短信码即可）。';
+  }
+  return { idx: idx, note: note };
+}
+
+function smsSet(text, cls){
+  var n = el('smsState');
+  if (!n) return;
+  n.textContent = text || '';
+  n.style.color = cls === 'bad' ? 'var(--bad)' : cls === 'ok' ? 'var(--ok)' : cls === 'warn' ? 'var(--warn)' : 'var(--tx2)';
+}
+
+function smsCountdown(sec){
+  smsCtl.left = sec;
+  if (smsCtl.timer) clearInterval(smsCtl.timer);
+  var btn = el('smsSend');
+  var tick = function(){
+    if (!btn) return;
+    if (smsCtl.left <= 0){
+      clearInterval(smsCtl.timer); smsCtl.timer = null;
+      btn.disabled = false; btn.textContent = '重新发送';
+      return;
+    }
+    btn.disabled = true; btn.textContent = smsCtl.left + 's 后重发';
+    smsCtl.left -= 1;
+  };
+  tick();
+  smsCtl.timer = setInterval(tick, 1000);
+}
+
+async function reloginAccount(id, btn){
+  if (btn){ btn.disabled = true; btn.textContent = '发码中…'; }
+  try{
+    var r = await api('/api/accounts/' + id + '/relogin', { body:{} });
+    if (!r || r.ok === false){ toast((r && r.error) || '发起重新登录失败', 'warn'); return; }
+    openSmsLogin({ sessId: r.id, masked: r.masked });
+  }catch(err){
+    toast('发起重新登录失败：' + err.message, 'warn');
+  }finally{
+    if (btn){ btn.disabled = false; btn.innerHTML = icon('key',12) + '重新登录'; }
+  }
+}
+
+function openSmsLogin(opts){
+  opts = opts || {};
+  var mode = opts.sessId ? 'session' : 'new';
+  var saved = '';
+  try { saved = localStorage.getItem('wb_last_phone') || ''; } catch(e){}
+  var phoneBlock = mode === 'session'
+    ? '<div class="field"><label>目标账号</label><div class="tiny" style="padding:6px 0">'+esc(opts.masked || '')+'（验证码已发出，号码只存在服务端）</div></div>'
+    : '<div class="field"><label>手机号（workbuddy.cn 登录用）</label>' +
+      '<input id="smsPhone" type="tel" inputmode="numeric" maxlength="11" placeholder="11 位手机号" autocomplete="tel" value="'+esc(saved)+'"></div>';
+  var body =
+    phoneBlock +
+    '<div class="field"><label>短信验证码</label>' +
+      '<div style="display:flex;gap:8px;align-items:stretch">' +
+        '<input id="smsCode" type="text" inputmode="numeric" maxlength="6" placeholder="6 位数字" style="flex:1" autocomplete="one-time-code">' +
+        '<button class="btn" id="smsSend" style="white-space:nowrap;min-width:112px">发送验证码</button>' +
+      '</div></div>' +
+    '<div id="smsState" class="tiny" style="min-height:18px;margin-top:4px"></div>' +
+    '<div class="help" style="margin-top:12px;line-height:1.75">' +
+      '这里用的是你平时登录 workbuddy.cn 的<b>手机号</b>。点「发送验证码」→ 手机收到短信 → 填进来到此完成一次登录，服务器会自己把会话（Cookie + accessToken + refreshToken）收走入库。<br>' +
+      '你全程不用复制任何 Cookie。之后靠 refreshToken 自动续期，正常情况下只需做这一次。<br>' +
+      '<b style="color:var(--warn)">点「登录并保存」后通常要等 30 秒到 3 分钟</b>——服务器要拉起真实浏览器、走完上游的验证码校验与换票流程，' +
+      '期间界面会显示当前进度和已等待秒数，<b>不是卡死</b>，请不要重复点击。<br>' +
+      '<div style="margin-top:10px"><a href="javascript:void 0" id="smsToQr" style="color:var(--brand)">走不通？改用微信扫码</a></div>' +
+    '</div>';
+  openDrawer(mode === 'session' ? '重新登录' : '手机号登录', body, '<button class="btn" data-close="1">关闭</button><button class="btn primary" id="smsLogin">登录并保存</button>');
+  if (mode === 'session'){
+    smsCtl.id = opts.sessId; smsCtl.phone = '';
+    smsSet('验证码已发往 ' + (opts.masked || '该账号') + '，填入收到的 6 位码', 'ok');
+    smsCountdown(60);
+    var ce0 = el('smsCode'); if (ce0) ce0.focus();
+  }
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', closeDrawer); });
+
+  el('smsToQr').addEventListener('click', function(){ closeDrawer(); setTimeout(openQrLogin, 120); });
+
+  el('smsSend').addEventListener('click', async function(){
+    var phone = mode === 'session' ? '' : (el('smsPhone').value || '').replace(/\D/g, '');
+    if (mode !== 'session' && !/^1[3-9]\d{9}$/.test(phone)){ smsSet('请输入 11 位大陆手机号', 'bad'); return; }
+    var btn = el('smsSend');
+    btn.disabled = true; btn.textContent = '发送中…';
+    smsSet('正在打开登录页并发送验证码，首次约需 10 秒…');
+    try{
+      // 换了号码就重开会话，避免旧 session 与号码不匹配
+      var r;
+      if (mode === 'session' && smsCtl.id){
+        r = await api('/api/login/sms/' + smsCtl.id + '/resend', { body:{} });
+      } else if (smsCtl.id && smsCtl.phone === phone){
+        r = await api('/api/login/sms/' + smsCtl.id + '/resend', { body:{} });
+      } else {
+        r = await api('/api/login/sms/start', { body:{ phone: phone } });
+        smsCtl.id = r.id; smsCtl.phone = phone;
+      }
+      try { localStorage.setItem('wb_last_phone', phone); } catch(e){}
+      if (r && r.ok === false){
+        smsSet(r.error || '发送失败', 'bad');
+        btn.disabled = false; btn.textContent = '重新发送';
+        return;
+      }
+      smsSet('验证码已发往 ' + (r && r.masked ? r.masked : (mode === 'session' ? (opts.masked || '该账号') : (phone.slice(0,3) + '****' + phone.slice(-4)))) + (mode === 'session' ? '' : '，这个号不对就改上面的输入框'), 'ok');
+      smsCountdown(r && r.expiresIn ? Math.max(30, r.expiresIn) : 60);
+      var codeEl = el('smsCode');
+      if (codeEl) codeEl.focus();
+    }catch(err){
+      smsSet('发送失败：' + err.message, 'bad');
+      btn.disabled = false; btn.textContent = '重新发送';
+    }
+  });
+
+  el('smsLogin').addEventListener('click', async function(){
+    var phone = (el('smsPhone').value || '').replace(/\D/g, '');
+    var code = (el('smsCode').value || '').replace(/\D/g, '');
+    if (!smsCtl.id || (mode !== 'session' && smsCtl.phone !== phone)){ smsSet('请先点「发送验证码」', 'warn'); return; }
+    if (code.length < 4){ smsSet('请填入短信里的验证码', 'warn'); return; }
+    var btn = el('smsLogin');
+    btn.disabled = true; btn.textContent = '登录中…';
+
+    // 轮询服务端进度：整个登录要跑 30~180 秒（要走真实浏览器 + 上游换票），
+    // 没有进度反馈时界面只有「登录中…」，用户会以为卡死。
+    var t0 = Date.now();
+    var stepText = '正在校验并换取会话…';
+    smsSet(stepText + '（0 秒）');
+    var poll = setInterval(function(){
+      var sec = Math.round((Date.now() - t0) / 1000);
+      if (sec > 240){ clearInterval(poll); return; }
+      api('/api/login/sms/' + smsCtl.id + '/status').then(function(s){
+        if (!s || s.ok === false) return;
+        stepText = s.stepText || stepText;
+        smsSet(stepText + '（' + sec + ' 秒）');
+      }).catch(function(){});
+    }, 2000);
+
+    try{
+      var r = await api('/api/login/sms/' + smsCtl.id + '/verify', { body:{ code: code }, timeout: 300000 });
+      clearInterval(poll);
+      if (r && r.ok){
+        var nm = r.account ? r.account.nickname : '';
+        smsSet('登录成功' + (nm ? '：' + nm : '') + '，会话已保存', 'ok');
+        toast('账号已添加' + (nm ? '：' + nm : ''), 'ok');
+        btn.textContent = '已完成';
+        await refresh();
+        setTimeout(function(){ closeDrawer(); }, 1300);
+        return;
+      }
+      smsSet((r && r.error) || '登录失败，请重试', 'bad');
+      btn.disabled = false; btn.textContent = '重试登录';
+    }catch(err){
+      clearInterval(poll);
+      if (err && err.timeout){
+        // 超时不代表服务端失败——后台可能仍在跑。让用户回账号列表核对，
+        // 而不是让按钮无限停在「登录中…」。
+        smsSet('等待超时（5 分钟）。服务器可能仍在后台完成，请到账号列表查看；若没有该账号再重试', 'warn');
+        btn.disabled = false; btn.textContent = '重试登录';
+        await refresh();
+        return;
+      }
+      smsSet('登录失败：' + err.message, 'bad');
+      btn.disabled = false; btn.textContent = '重试登录';
+    }
+  });
+
+  setTimeout(function(){
+    var p = el('smsPhone');
+    if (p && !p.value) p.focus();
+    else { var c = el('smsCode'); if (c) c.focus(); }
+  }, 60);
+}
+
+function openQrLogin(){
+  var body =
+    '<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:6px 0 2px">' +
+      '<div id="qrFrame" style="width:224px;height:224px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line)">' +
+        '<div class="tiny" id="qrLoading" style="color:#666">正在启动登录页…</div>' +
+      '</div>' +
+      '<div id="qrState" class="tiny" style="min-height:18px;text-align:center">二维码由服务器实时渲染，请稍候</div>' +
+      '<div id="qrCountdown" class="tiny" style="color:var(--tx3)"></div>' +
+    '</div>' +
+    '<div class="help" style="margin-top:14px;line-height:1.7">扫码全程在服务器端完成：服务自己打开 workbuddy.cn 登录页 → 抓二维码 → 你扫完并在手机确认 → 服务器自动把会话 Cookie 收走入库。<br>不需要再复制 Cookie，也不用装扩展。二维码约 5 分钟有效，过期点「重新获取」即可。</div>';
+  openDrawer('扫码添加账号', body, '<button class="btn" data-close="1">关闭</button><button class="btn primary" id="qrAgain" disabled>重新获取二维码</button>');
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', closeDrawer); });
+  el('qrAgain').addEventListener('click', function(){ qrRestart(); });
+  qrRestart();
+}
+
+var qrCtl = null;
+
+function qrSetState(text, cls){
+  var n = el('qrState');
+  if (!n) return;
+  n.textContent = text;
+  n.style.color = cls === 'bad' ? 'var(--bad)' : cls === 'ok' ? 'var(--ok)' : cls === 'warn' ? 'var(--warn)' : 'var(--tx2)';
+}
+
+function qrShowImage(dataUrl){
+  var f = el('qrFrame');
+  if (!f) return;
+  f.innerHTML = '<img alt="微信登录二维码" style="width:100%;height:100%;object-fit:contain;display:block" src="' + dataUrl + '">';
+}
+
+function qrStop(cancel){
+  if (qrCtl && qrCtl.timer) clearInterval(qrCtl.timer);
+  if (qrCtl && cancel && qrCtl.id){ api('/api/login/qr/' + qrCtl.id + '/cancel', { body:{} }).catch(function(){}); }
+  qrCtl = null;
+}
+
+async function qrRestart(auto){
+  var prevCount = (auto && qrCtl) ? (qrCtl.autoCount || 0) : 0;
+  qrStop(true);
+  var f = el('qrFrame');
+  if (f && !auto) f.innerHTML = '<div class="tiny" id="qrLoading" style="color:#666">正在启动登录页…</div>';
+  qrSetState(auto ? '二维码已自动刷新，请用微信扫描' : '正在启动登录页并抓取二维码…');
+  var again = el('qrAgain');
+  if (again){ again.disabled = true; again.textContent = '获取中…'; }
+  try{
+    var r = await api('/api/login/qr/start', { body:{} });
+    qrCtl = { id:r.id, expiresAt:r.expiresAt, timer:null, lastQr:'', autoCount: prevCount };
+    qrShowImage(r.qr);
+    qrCtl.lastQr = r.qr;
+    qrSetState('请用微信扫描上方二维码');
+    if (again){ again.disabled = false; again.textContent = '重新获取二维码'; }
+    qrCtl.timer = setInterval(qrTick, 2000);
+  }catch(err){
+    qrSetState('启动失败：' + err.message, 'bad');
+    if (again){ again.disabled = false; again.textContent = '重试'; }
+  }
+}
+
+async function qrTick(){
+  if (!qrCtl) return;
+  if (!el('drawer') || !el('drawer').classList.contains('on')){ qrStop(false); return; }
+  var left = Math.max(0, Math.round((qrCtl.expiresAt - Date.now())/1000));
+  var cd = el('qrCountdown');
+  if (cd) cd.textContent = left > 0 ? ('二维码剩余 ' + Math.floor(left/60) + ' 分 ' + (left%60) + ' 秒') : '';
+  try{
+    var st = await api('/api/login/qr/' + qrCtl.id);
+    if (st.qr && st.qr !== qrCtl.lastQr){ qrShowImage(st.qr); qrCtl.lastQr = st.qr; }
+    if (st.status === 'scanned'){ qrSetState('已扫码，请在手机上点击「确认登录」（确认后自动建立会话）', 'warn'); }
+    else if (st.status === 'pending'){ /* 保持提示 */ }
+    else if (st.status === 'success'){
+      qrStop(false);
+      var nm = st.account ? st.account.nickname : '';
+      qrSetState('登录成功' + (nm ? '：' + nm : '') + '，会话已自动保存', 'ok');
+      toast('账号已添加' + (nm ? '：' + nm : ''), 'ok');
+      await refresh();
+      setTimeout(function(){ closeDrawer(); }, 1400);
+    } else if (st.status === 'expired'){
+      var n = (qrCtl.autoCount || 0) + 1;
+      if (n <= 3){
+        qrCtl.autoCount = n;
+        await qrRestart(true);
+      } else {
+        qrStop(false);
+        qrSetState('二维码多次过期，请点「重新获取二维码」', 'warn');
+      }
+    } else if (st.status === 'error'){
+      qrStop(false);
+      qrSetState(st.error || '登录失败，请重试', 'bad');
+    } else if (st.status === 'unknown'){
+      qrStop(false);
+      qrSetState('任务已结束，请重新获取二维码', 'warn');
+    }
+  }catch(err){
+    qrSetState('轮询失败：' + err.message, 'bad');
+  }
+}
+
+function openPairingDrawer(pr){
+  var base = location.origin;
+  var body =
+    '<div class="tiny" style="line-height:1.8;margin-bottom:16px">' +
+    '在浏览器里登录 workbuddy.cn，然后打开扩展面板，填入下面的配对码与本服务地址。扩展会自动识别登录态、校验后回传，无需手动找令牌。</div>' +
+    '<div class="field"><label>配对码（10 分钟内有效，一次性）</label>' +
+    '<div class="code" style="font-size:26px;letter-spacing:8px;text-align:center;padding:16px 8px;padding-right:8px">'+esc(pr.code)+'</div></div>' +
+    '<div class="field"><label>服务地址</label>' +
+    '<div class="code" style="padding-right:76px"><button class="btn sm copy" data-copy="'+esc(base)+'">复制</button>'+esc(base)+'</div></div>' +
+    '<div class="help">扩展目录在本项目 <span class="mono">extension/</span>，Chrome 打开 <span class="mono">chrome://extensions</span> → 打开「开发者模式」→「加载已解压的扩展程序」选择该目录。</div>';
+  openDrawer('浏览器扩展配对', body, '<button class="btn primary" data-close="1">知道了</button>');
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', closeDrawer); });
+}
+
+function openPasswordDrawer(){
+  var body =
+    '<div class="field"><label>当前口令</label><input type="password" id="pwCur" autocomplete="current-password"></div>' +
+    '<div class="field"><label>新口令（至少 8 位）</label><input type="password" id="pwNew" autocomplete="new-password"></div>' +
+    '<div class="field"><label>确认新口令</label><input type="password" id="pwNew2" autocomplete="new-password"></div>' +
+    '<div class="help">修改成功后所有已登录会话立即失效，需要重新登录。</div>';
+  openDrawer('修改管理员口令', body, '<button class="btn" data-close="1">取消</button><button class="btn primary" id="pwSave">确认修改</button>');
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', closeDrawer); });
+  el('pwSave').addEventListener('click', async function(){
+    if (el('pwNew').value !== el('pwNew2').value){ toast('两次输入的新口令不一致', 'bad'); return; }
+    try{
+      await api('/api/password', { body:{ current: el('pwCur').value, next: el('pwNew').value } });
+      closeDrawer();
+      toast('口令已修改，请重新登录', 'ok');
+      setTimeout(showGate, 800);
+    }catch(err){ toast(err.message, 'bad'); }
+  });
+}
+
+/* ============ 复制 ============ */
+async function copyText(text){
+  try{
+    if (navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); }
+    else{
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    toast('已复制', 'ok');
+  }catch(e){ toast('复制失败，请手动选中', 'warn'); }
+}
+
+/* ============ 启动 ============ */
+el('btnLogout').addEventListener('click', async function(){
+  try{ await api('/api/logout', { body:{} }); }catch(e){}
+  S.authed = false; showGate();
+});
+
+(async function boot(){
+  try{
+    var s = await fetch('/api/session', { credentials:'same-origin' }).then(function(r){ return r.json(); });
+    if (s.siteTitle) document.title = s.siteTitle;
+    if (!s.initialized){
+      el('gateDesc').textContent = '首次使用，请设置管理员口令';
+      el('gateHint').textContent = '这个口令只保存在服务端（scrypt 哈希），请务必记牢。';
+    }
+    if (s.authed){
+      S.authed = true; S.csrf = s.csrf;
+      S.view = viewFromHash();
+      hideGate();
+      await loadState();
+    } else {
+      showGate();
+    }
+  }catch(err){
+    showGate();
+    el('gateHint').textContent = '无法连接服务端：' + err.message;
+  }
+})();
+
+setInterval(function(){
+  if (!S.authed) return;
+  var t = el('footTime');
+  if (t) t.textContent = new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+}, 30000);
+</script>
+</body>
+</html>

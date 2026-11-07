@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "WorkBuddy 登录态抓取",
+  "version": "1.0.0",
+  "description": "在 workbuddy.cn 页面读取登录态，自校验后一键上报到你的账号工作台。",
+  "permissions": ["scripting", "activeTab", "storage", "cookies"],
+  "host_permissions": [
+    "https://www.workbuddy.cn/*",
+    "https://*.workbuddy.cn/*"
+  ],
+  "action": {
+    "default_title": "WorkBuddy 登录态抓取",
+    "default_popup": "popup.html"
+  }
+}

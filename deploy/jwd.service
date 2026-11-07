@@ -1,0 +1,35 @@
+[Unit]
+Description=WorkBuddy Console (multi-account dashboard)
+Documentation=https://www.workbuddy.cn
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 按实际路径修改
+WorkingDirectory=/opt/jwd-server
+ExecStart=/usr/bin/node /opt/jwd-server/server.js
+Restart=always
+RestartSec=3
+
+# 非 root 运行
+User=jwd
+Group=jwd
+
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=8790
+Environment=TZ=Asia/Shanghai
+# 主密钥建议写在这里或用 EnvironmentFile 引入，避免明文进 shell 历史
+# Environment=WB_MASTER_KEY=
+EnvironmentFile=-/opt/jwd-server/.env
+
+# 沙箱加固
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/opt/jwd-server/data
+
+[Install]
+WantedBy=multi-user.target

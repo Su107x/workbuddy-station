@@ -1,0 +1,29 @@
+services:
+  wb-console:
+    build: .
+    container_name: wb-console
+    restart: unless-stopped
+    # 只监听回环地址，由 Nginx 反代对外提供服务；想直接对外改成 "8790:8790"
+    ports:
+      - "127.0.0.1:8790:8790"
+    environment:
+      # 首次启动用来初始化管理员口令；之后改口令在页面里操作即可
+      WB_ADMIN_PASSWORD: "${WB_ADMIN_PASSWORD:-}"
+      # 强烈建议固定一个 32 字节主密钥，否则删除容器后旧数据无法解密
+      WB_MASTER_KEY: "${WB_MASTER_KEY:-}"
+      WB_PUBLIC_URL: "${WB_PUBLIC_URL:-}"
+      WB_BROWSER_IDLE_MINUTES: "${WB_BROWSER_IDLE_MINUTES:-10}"
+      TZ: "Asia/Shanghai"
+    volumes:
+      - ./data:/app/data
+    # 扫码登录会拉起无头 chromium，给足共享内存，避免渲染时崩
+    shm_size: "512mb"
+    # 小内存服务器（2GB）建议放开下面两行的注释：
+    # 内存上限 768MB，并预留 256MB 给系统兜底，避免浏览器把整机拖垮
+    # mem_limit: 768m
+    # memswap_limit: 768m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
