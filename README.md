@@ -94,7 +94,7 @@ sudo systemctl daemon-reload && sudo systemctl enable --now jwd
 POST /api/login/qr/start   → 服务端拉起无头 chromium，打开
                              https://www.workbuddy.cn/login/?platform=website&state=2&product=workbuddy
                              → Keycloak（client_id=console，scope 含 offline_access）
-                             → 微信 IdP：open.weixin.qq.com/connect/qrconnect?appid=wx31d4d71eb5f8c69e
+                             → 微信 IdP：open.weixin.qq.com/connect/qrconnect（微信开放平台 appid）
                              → 把二维码图片抓下来，data URL 回给前端
 GET  /api/login/qr/{id}    → 每 2 秒轮询；服务端到业务页实打一次
                              /v2/billing/meter/checkin-activity-status 逼 APISIX 下发会话
