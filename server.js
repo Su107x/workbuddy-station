@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
+const zlib = require('zlib');
 
 const { loadMasterKey, randomPassword, randomId, makeAccessKey, safeEqual, mask } = require('./lib/crypto');
 const { Store } = require('./lib/store');
@@ -186,6 +187,34 @@ function sendJson(res, status, body, extraHeaders) {
   res.end(text);
 }
 
+/**
+ * gzip 压缩缓存。
+ *
+ * 为什么需要：index.html 单文件 200KB+，这台机器公网上行只有 ~5Mbps 且抖动大，
+ * 不压缩时首屏要 2 秒以上（实测 0.05s 首字节 + 2.3s 传体）。gzip 后约 1/6 体积。
+ *
+ * 为什么用「首次压缩 + 缓存」而不是每次请求现压：
+ *   现压每次都要读全文件 + 压缩 ≈ 10-20ms CPU，首页刷新频繁时会白烧 CPU；
+ *   缓存后只有第一次付这个成本。缓存 key 带 mtime+size，文件更新自动失效。
+ */
+const gzipCache = new Map(); // key: 绝对路径 -> { mtimeMs, size, buf }
+
+function getGzipped(target, st, cb) {
+  const cached = gzipCache.get(target);
+  if (cached && cached.mtimeMs === st.mtimeMs && cached.size === st.size) {
+    cb(null, cached.buf);
+    return;
+  }
+  fs.readFile(target, (err, raw) => {
+    if (err) { cb(err); return; }
+    zlib.gzip(raw, { level: 6 }, (e2, buf) => {
+      if (e2) { cb(null, null); return; } // 压缩失败就退回明文，不能因此报错
+      gzipCache.set(target, { mtimeMs: st.mtimeMs, size: st.size, buf });
+      cb(null, buf);
+    });
+  });
+}
+
 function serveStatic(req, res, pathname) {
   let rel = decodeURIComponent(pathname);
   if (rel === '/' || rel === '') rel = '/index.html';
@@ -200,12 +229,36 @@ function serveStatic(req, res, pathname) {
       res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end('Not Found');
       return;
     }
-    res.writeHead(200, {
-      'content-type': MIME[path.extname(target).toLowerCase()] || 'application/octet-stream',
-      'content-length': st.size,
+    const ext = path.extname(target).toLowerCase();
+    const type = MIME[ext] || 'application/octet-stream';
+    const baseHeaders = {
+      'content-type': type,
       'cache-control': path.basename(target) === 'index.html' ? 'no-cache' : 'public, max-age=3600',
+      // 文本类才压缩；图片/字体本身已压缩，再 gzip 只会更慢
+      vary: 'Accept-Encoding',
+    };
+    const compressible = /^(text\/|application\/(json|javascript|xml)|image\/svg)/.test(type);
+    const accepts = /gzip/i.test(String(req.headers['accept-encoding'] || ''));
+
+    if (!compressible || !accepts || st.size < 1024) {
+      res.writeHead(200, { ...baseHeaders, 'content-length': st.size });
+      fs.createReadStream(target).pipe(res);
+      return;
+    }
+
+    getGzipped(target, st, (e, buf) => {
+      if (e || !buf) {
+        res.writeHead(200, { ...baseHeaders, 'content-length': st.size });
+        fs.createReadStream(target).pipe(res);
+        return;
+      }
+      res.writeHead(200, {
+        ...baseHeaders,
+        'content-encoding': 'gzip',
+        'content-length': buf.length,
+      });
+      res.end(buf);
     });
-    fs.createReadStream(target).pipe(res);
   });
 }
 
@@ -777,6 +830,33 @@ route('GET', /^\/api\/meow\/records\/([\w-]+)$/, async (req, res, m) => {
   sendJson(res, 200, await meow.records(m[1], u.searchParams.get('page') || 1, u.searchParams.get('size') || 20));
 });
 
+/* ---------------- 成长任务（Growth Program Tasks） ----------------
+ * 走官方成长中心同款接口：
+ *   GET  /v2/activity/growth/tasks              任务列表
+ *   POST /activity/growth/tasks/accept          接受任务
+ *   POST /activity/growth/tasks/{code}/claim    领取奖励（上游幂等，重复调用不会重复发奖）
+ *   GET  /activity/growth/energy                能量余额
+ */
+function growthFail(res, err) {
+  const code = err && err.statusCode ? err.statusCode : 500;
+  sendJson(res, code, { error: err && err.message ? err.message : '操作失败' });
+}
+
+
+
+
+
+
+
+/**
+ * 单个任务点亮（手动触发）。
+ *
+ * 与 /api/growth/complete（批量）的区别：**不受 settings.growth.allowLightUp 批量开关约束**。
+ * 批量开关的用途是「禁止一条命令刷全部任务」（风控），而单任务按钮是用户对某一个任务的明确意图。
+ * 2026-10-30 实测：埋点 userId 换成桌面 UUID 后，上报是真能归账的（0 → 1），
+ * 所以单任务这条链路要真的能用，不能再被一个批量开关整条堵死。
+ */
+
 
 /* ---------------- 积分体系 ----------------
  * 数据来源：POST /billing/meter/get-user-resource-summary（不带 /v2 前缀）
@@ -936,6 +1016,20 @@ route('POST', /^\/api\/accounts\/([\w-]+)\/resume$/, async (req, res, m) => {
   // 同上：日志统一由 accounts.resume() 记
   sendJson(res, 200, { ok: true, id: acc.id, pauseMode: '' });
 });
+
+/* ---------------- 邀请活动 ----------------
+ * 官方接口：
+ *   POST /activity/workbuddy/invitation/v2/bind       绑定邀请码（仅新注册用户）
+ *   GET  /activity/workbuddy/invitation/v2/my-progress  邀请进度
+ *   GET  /activity/workbuddy/invitation/v2/invite-records 邀请记录
+ *   GET  /activity/workbuddy/invitation/v2/my-code      我的邀请码
+ */
+
+
+
+/* ---------- 自动注册：新手机号 → 建号 → 绑邀请码 → 激活 ---------- */
+
+
 
 
 
